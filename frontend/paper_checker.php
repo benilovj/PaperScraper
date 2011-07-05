@@ -5,6 +5,10 @@ increase_question_counter();
 
 $id = $_SESSION['id'];
 
+if (!is_numeric($id)) { //rudimentary sanitisation
+	die("$id is not int");
+}
+
 include "/etc/db-config/db-config.php";
 $database = "papers";
 $host = "localhost";
