@@ -267,8 +267,8 @@ end
 class FileClipper
 
   def initialize(queuefile, logfile)
-    @queuefile = queuefile
-    @logfile = logfile
+    @queuefile = $script_path + "/" + queuefile
+    @logfile = $script_path + "/" + logfile
   end
 
   def get_line
