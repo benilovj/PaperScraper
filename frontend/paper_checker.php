@@ -55,10 +55,6 @@ function flag_if_deceptive($id) {
 	}
 }
 
-function increase_score() {
-	$_SESSION['score']++;
-}
-
 function register_wrong_guess($id) {
 	global $db_found;
 	if ($db_found) {
