@@ -34,6 +34,7 @@ function ask_question() {
 
 function present_score() {
 	echo "You scored " . $_SESSION['score'];
+	$_SESSION['score'] = 0;
 }
 
 function query_comments_table( $bias ) {
@@ -49,7 +50,6 @@ function query_comments_table( $bias ) {
 	
 	if ($db_found) {
 		//get the total number of rows available and choose a random number in that range
-		echo "bias is " . $bias;	
 		$row_values = fetch_a_comment($bias);
 		while ($row_values == false) {
 		$row_values = fetch_a_comment($bias); //make sure we don't get a blank result
