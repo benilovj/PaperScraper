@@ -188,7 +188,7 @@ class DataDruid
     remove_moderator_notices
     clean_empty_comments
     if @total_rows[0].to_i > 5000
-      trim_rows(@total_rows - 5000) 
+      trim_rows(@total_rows[0].to_i - 5000) 
       # reset the id column or chaos will ensue
       $dbh.query("ALTER TABLE comments DROP COLUMN id;")
       $dbh.query("ALTER TABLE comments ADD id INT UNSIGNED NOT NULL AUTO_INCREMENT,
