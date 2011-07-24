@@ -1,5 +1,7 @@
 $(document).ready(function() { 
 
+	$('#response').hide();
+
 /*$('form#paper-form :submit').submit(function() {
 	var _data = $(this).closest('form').serializeArray();
 	_data.push({ name : this.name, value: this.value });
@@ -24,6 +26,7 @@ $(document).ready(function() {
 			success: function(html) { 
 				$("#response").append(html); }
 		});
+		$('#response').show();
 		return false;
 	});
 	$("input#mail").click(function() {
@@ -34,6 +37,7 @@ $(document).ready(function() {
 			success: function(html) { 
 				$("#response").append(html); }
 		});
+		$('#response').show();
 		return false;
 	});
 

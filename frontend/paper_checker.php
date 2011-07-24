@@ -23,35 +23,36 @@ if ($db_found) {
 	mysql_query($SQL); 
 
 }
-
+?> <div id="answer-report"> <?php
 // blend this into 1 function
 if($_POST['mail'] && $_SESSION['answer'] == "Daily Mail") 
-{ echo "You were right, it was the <strong>Daily Mail</strong>";
+{ echo "You were right, it was the <strong>Daily Mail</strong><br />";
 	register_correct_guess($id);
 	gain_a_point(); }
 
 	elseif($_POST['guardian'] && $_SESSION['answer'] == "Guardian") 
-{ echo "You were right, it was the <strong>Guardian</strong>"; 
+{ echo "You were right, it was the <strong>Guardian</strong><br />"; 
 	register_correct_guess($id);
 	gain_a_point(); }
 
-	else { echo "you were <strong>WRONG</strong> - it was the <strong>${_SESSION['answer']}</strong>!"; 
+	else { echo "you were <strong>WRONG</strong> - it was the <strong>${_SESSION['answer']}</strong>!<br />"; 
 		register_wrong_guess($id); }
 
-
+?> </div> <?php
 display_trends(get_trends());
 flag_if_deceptive($id);	
-
-echo "<p><strong>Original comment: </strong>" . $_SESSION['comment'] . "</p>";
-echo "<a href=\"" . $_SESSION['url'] . "\">See the original article</a>";
+echo "<div class='wflf-question-controls'>";
+echo "<a href=\"" . $_SESSION['url'] . "\">See the original article</a><br />";
 echo "<br />";
-echo "<a href=\"index.php\">Next question</a>";
+echo "<a href=\"index.php\">Next question</a><br />";
+echo "</div>";
 echo "comment id is: " . $id;
 
 function flag_if_deceptive($id) {
 	global $db_found;
 	if($db_found) {
 		$SQL = "update comments set deceptive = 1 where id = ${id} AND (wrong >= correct)";
+		mysql_query($SQL);
 		$SQL = "update comments set deceptive = 0 where id = ${id} AND (correct > wrong)";
 		mysql_query($SQL);
 	}
@@ -85,7 +86,9 @@ function increase_question_counter() {
 }
 
 function display_trends($proportion) {
-	echo "This comment has a score of ${proportion}";
+	if ($proportion < -20) { echo "People tend to guess the wrong source for this comment."; }
+	elseif ($proportion > 20) {echo "People tend to guess this comment correctly."; }
+	elseif ($proportion == 0) {echo "This comment attracts even numbers of correct and wrong guesses."; }
 }
 
 function get_trends() {
@@ -100,9 +103,9 @@ $total_votes = $positive + $negative;
 $score = $positive - $negative;
 
 if ($total_votes == 1 && $score == -1) {
-	return -100; }
+	return -10; }
 elseif ($total_votes == 1 && $score == 1) {
-	return 100; }
+	return 10; }
 
 if ($total_votes % 2 != 0 && $total_votes != 1) {
 	$total_votes++;
@@ -116,7 +119,7 @@ if ($trend < $midpoint && $trend > 0) { // we want a negative number for our tre
 	$trend = $trend*-1;
 } 
 
-$proportion = ($trend / $total_votes)*100;
+$proportion = ($trend / $total_votes)*10;
 
 return $proportion;
 
