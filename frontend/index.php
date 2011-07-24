@@ -1,17 +1,21 @@
 <?php
+include 'header.php';
+//INITIALIZE SESSION VARIABLES IF VISITING FOR THE FIRST TIME 
+session_start(); 
+$_SESSION['question'] = isset($_SESSION['question']) ? $_SESSION['question'] : 1; 
+$_SESSION['score'] = isset($_SESSION['score']) ? $_SESSION['score'] : 0; 
 
-session_start();
-
-$_SESSION['question'] = isset($_SESSION['question']) ? $_SESSION['question'] : 1;
-$_SESSION['score'] = isset($_SESSION['score']) ? $_SESSION['score'] : 0;
+?> 
+<?php
 
 if(isset($_SESSION['question']) && $_SESSION['question'] < 10) {
 	ask_question();
 	} else {
 	present_score();
 	$_SESSION['question'] = 1;
-	}
-
+	} ?>
+<br /></div>
+<?php
 function ask_question() {
 
 	$bias = bias_comments(); //$bias == true on average 1 in 5 times - adjust bias_comments to change
@@ -21,15 +25,20 @@ function ask_question() {
 	$_SESSION['id']=  $comment_details['id'];
 	$_SESSION['url']= $comment_details['url'];
 	$_SESSION['deceptive']= $comment_details['deceptive'];
-	echo "This is question number ". $_SESSION['question'];
-	echo "Your score is " . $_SESSION['score'];
+	$_SESSION['wrong']= $comment_details['wrong'];
+	$_SESSION['correct']= $comment_details['correct'];
 
-	echo '<form name="input" action="paper_checker.php" method="post">
+	echo '<div class="wflf-question-box"> <form name="input" id="paper-form" action="paper_checker.php" method="post">
 			<input type="hidden" name="mail">
 			<input type="hidden" name="guardian">
-			<input type="submit" name="mail" value="mail" />
-			<input type="submit" name="guardian" value="guardian" />
+			<input type="submit" id="mail" name="mail" value="mail" />
+			<input type="submit" id="guardian" name="guardian" value="guardian" />
 	</form>';
+	echo "This is question number ". $_SESSION['question'] . "<br />";
+	echo "Your score is " . $_SESSION['score'] . "</div>";
+
+	echo "<div id='response'></div>";
+
 }
 
 function present_score() {
@@ -91,6 +100,8 @@ function get_values_from_row($SQL_query_result) {
 		$comment_id = $db_field['id'];
 		$comment_url = $db_field['url'];
 		$comment_deceptive_flag = $db_field['deceptive'];
+		$comment_correct_count = $db_field['correct'];
+		$comment_wrong_count = $db_field['wrong'];
 	}
 	
 	if (!isset($comment_id)) { 
@@ -101,7 +112,9 @@ function get_values_from_row($SQL_query_result) {
 		'comment' => $present_comment,
 		'id' => $comment_id,
 		'url' => $comment_url,
-		'deceptive' => $comment_deceptive_flag
+		'deceptive' => $comment_deceptive_flag,
+		'correct' => $comment_correct_count,
+		'wrong' => $comment_wrong_count		
 	);
 			
 }
@@ -121,4 +134,5 @@ function bias_comments() {
 	if ( $result > 1) { return false; 
 	} else return true; 
 }
+include 'footer.php';
 ?>
