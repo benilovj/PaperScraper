@@ -15,6 +15,7 @@ require 'hpricot'
 require 'mechanize'
 require 'mysql'
 require 'rss/2.0'
+require 'iconv'
 
 #set up db connection
 require $script_path + '/db-config'
@@ -143,14 +144,15 @@ class GuardianScraper < Scraper
   
   def initialize ( url )
     @url = url
-    @scrape = Hpricot(open(url))
+    @scrape = open(url)
     @paper = "Guardian"
   end
 
-  protected
+	protected
 
   def download_comments
-    comments = @scrape.search("div[@class='comment-body']")
+		@scrape.rewind
+		comments = Hpricot(Iconv.conv('utf-8', @scrape.charset, @scrape.readlines.join("\n"))).search("div[@class='comment-body']")
   end
   
   def to_array (comments)
@@ -187,6 +189,7 @@ class DataDruid
     remove_references_to_source
     remove_moderator_notices
     clean_empty_comments
+		remove_comments_with_malformed_chars
     if @total_rows[0].to_i > 5000
       trim_rows(@total_rows[0].to_i - 5000) 
       # reset the id column or chaos will ensue
@@ -221,6 +224,10 @@ class DataDruid
   def remove_moderator_notices
     $dbh.query("DELETE FROM `comments` WHERE comment regexp 'This comment was removed by a moderator'")
   end
+
+	def remove_comments_with_malformed_chars
+    $dbh.query("DELETE FROM `comments` WHERE comment regexp 'This comment was removed by a moderator'")
+	end
 
   def clean_empty_comments
     $dbh.query("DELETE FROM `comments` WHERE comment = ''")
