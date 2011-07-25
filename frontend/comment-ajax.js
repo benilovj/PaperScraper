@@ -11,6 +11,7 @@ $(document).ready(function() {
 				$("#response").append(html); }
 		});
 		$('#response').show();
+		hideButtons();
 		return false;
 	});
 
@@ -23,9 +24,13 @@ $(document).ready(function() {
 				$("#response").append(html); }
 		});
 		$('#response').show();
+		hideButtons();
 		return false;
 	});
 
+function hideButtons() {
+	$("#wflf-selection-buttons").hide();
+}
 
 });
 

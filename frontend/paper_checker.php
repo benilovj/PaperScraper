@@ -26,27 +26,24 @@ if ($db_found) {
 ?> <div id="answer-report"> <?php
 // blend this into 1 function
 if($_POST['mail'] && $_SESSION['answer'] == "Daily Mail") 
-{ echo "You were right, it was the <strong>Daily Mail</strong><br />";
+{ echo "<span class='wflf-big-text'>CORRECT</span><br />It was the <strong>Daily Mail</strong><br />";
 	register_correct_guess($id);
 	gain_a_point(); }
 
 	elseif($_POST['guardian'] && $_SESSION['answer'] == "Guardian") 
-{ echo "You were right, it was the <strong>Guardian</strong><br />"; 
+{ echo "<span class='wflf-big-text'>CORRECT</span><br />It was the <strong>Guardian</strong><br />"; 
 	register_correct_guess($id);
 	gain_a_point(); }
 
-	else { echo "you were <strong>WRONG</strong> - it was the <strong>${_SESSION['answer']}</strong>!<br />"; 
+	else { echo "<span class='wflf-big-text'>WRONG</span><br />It was the <strong>${_SESSION['answer']}</strong>!<br />"; 
 		register_wrong_guess($id); }
 
 ?> </div> <?php
 display_trends(get_trends());
 flag_if_deceptive($id);	
-echo "<div class='wflf-question-controls'>";
-echo "<a href=\"" . $_SESSION['url'] . "\">See the original article</a><br />";
-echo "<br />";
-echo "<a href=\"index.php\">Next question</a><br />";
+echo "<div id='wflf-question-controls'>";
+echo "<a href=\"" . $_SESSION['url'] . "\">See the original article</a> <a href=\"index.php\">Next question</a><br />";
 echo "</div>";
-echo "comment id is: " . $id;
 
 function flag_if_deceptive($id) {
 	global $db_found;
@@ -86,8 +83,8 @@ function increase_question_counter() {
 }
 
 function display_trends($proportion) {
-	if ($proportion < -20) { echo "People tend to guess the wrong source for this comment."; }
-	elseif ($proportion > 20) {echo "People tend to guess this comment correctly."; }
+	if ($proportion <= -2) { echo "People tend to guess the wrong source for this comment."; }
+	elseif ($proportion >= 2) {echo "People tend to guess this comment correctly."; }
 	elseif ($proportion == 0) {echo "This comment attracts even numbers of correct and wrong guesses."; }
 }
 
@@ -103,25 +100,11 @@ $total_votes = $positive + $negative;
 $score = $positive - $negative;
 
 if ($total_votes == 1 && $score == -1) {
-	return -10; }
+	return -1; }
 elseif ($total_votes == 1 && $score == 1) {
-	return 10; }
+	return 1; }
 
-if ($total_votes % 2 != 0 && $total_votes != 1) {
-	$total_votes++;
-} elseif ($total_votes == 0) { return false; }
-
-$midpoint = $total_votes / 2;
-
-$trend = $midpoint + $score; // overall weighting towards positive or negative
-
-if ($trend < $midpoint && $trend > 0) { // we want a negative number for our trend if the weighting is below the midpoint
-	$trend = $trend*-1;
-} 
-
-$proportion = ($trend / $total_votes)*10;
-
-return $proportion;
+return $score;
 
 }
 
