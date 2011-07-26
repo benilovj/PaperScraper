@@ -11,6 +11,10 @@ $db_found=mysql_select_db($database, $db_handle);
 //begin high score table
 ?>
 
+<img src="images/mail.gif" />
+<div id="subheading">
+<span class="wflf-broad-text">Top 10: The ones most people get right</span>
+</div>
 <ol>
 <?php
 if ($db_found) {

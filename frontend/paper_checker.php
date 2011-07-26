@@ -3,6 +3,10 @@ session_start();
 
 increase_question_counter();
 
+$guardianimage = "<img src='images/guardian.png' alt='It was from the Guardian' />";
+$mailimage="<img src ='images/mail.gif' alt='It was from the Daily Mail' />";
+$rightimage="<img src='images/right.gif' alt='Right!' />";
+$wrongimage="<img src='images/wrong.gif' alt='Wrong!' />";
 $id = $_SESSION['id'];
 
 if (!is_numeric($id)) { //rudimentary sanitisation as we use this id for a db key
@@ -25,21 +29,33 @@ if ($db_found) {
 }
 ?> <div id="answer-report"> <?php
 // blend this into 1 function
+
 if($_POST['mail'] && $_SESSION['answer'] == "Daily Mail") 
-{ echo "<span class='wflf-big-text'>CORRECT</span><br />It was the <strong>Daily Mail</strong><br />";
+{ echo '<p class="systemfont result">'. get_response('good') . '</p>'; 
 	register_correct_guess($id);
 	gain_a_point(); }
 
 	elseif($_POST['guardian'] && $_SESSION['answer'] == "Guardian") 
-{ echo "<span class='wflf-big-text'>CORRECT</span><br />It was the <strong>Guardian</strong><br />"; 
+{ echo '<p class="systemfont result">'. get_response('good') . '</p>'; 
 	register_correct_guess($id);
 	gain_a_point(); }
 
-	else { echo "<span class='wflf-big-text'>WRONG</span><br />It was the <strong>${_SESSION['answer']}</strong>!<br />"; 
+	else { echo '<p class="systemfont result">'. get_response('bad') . '</p>'; 
 		register_wrong_guess($id); }
 
-?> </div> <?php
-display_trends(get_trends());
+?> <br /><?php
+
+switch ($_SESSION['answer']) {
+	case 'Daily Mail':
+		echo $mailimage . "<br />";
+		break;
+	case 'Guardian':
+		echo $guardianimage . "<br />";
+}
+
+?> </div> 
+<div class="centretext"><p class="systemfont"><?php
+display_trends(get_trends()); ?> </p></div><?php
 flag_if_deceptive($id);	
 echo "<div id='wflf-question-controls'>";
 echo "<a href=\"" . $_SESSION['url'] . "\">See the original article</a> <a href=\"index.php\">Next question</a><br />";
@@ -105,6 +121,23 @@ elseif ($total_votes == 1 && $score == 1) {
 	return 1; }
 
 return $score;
+
+}
+
+function get_response($tone) {
+	$goodwords = array('Super!', 'Great!', 'Well done!', 'Good!', 'Excellent!', 'Good guess!', 'You\'re good!', 'Incredible!', 'You\'re right!');
+	$badwords = array('Hard luck!', 'Oh dear', 'Incorrect guess', 'You\'re wrong', 'Pity', 'Nope', 'Oh no!', 'Hard cheese', 'Sorry old thing');
+	
+switch ($tone) {
+	case 'good':
+		return $goodwords[array_rand($goodwords, 1)];
+		break;
+	case 'bad':
+		return $badwords[array_rand($badwords, 1)];
+		break;
+	default:
+		return 'Error';
+}
 
 }
 

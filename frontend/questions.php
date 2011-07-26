@@ -42,9 +42,11 @@ function ask_question() {
 
 }
 
-function present_score() {
-	echo "You scored <span class='wflf-hugenum'>" . $_SESSION['score'] . "</span>";
-	$_SESSION['score'] = 0;
+function present_score() { ?>
+	<div id="wflf-scorebox"><?php
+	echo "<p class='systemfont'>You scored</p> <span class='wflf-hugenum'>" . $_SESSION['score'] . "</span>";
+	$_SESSION['score'] = 0; ?>
+	</div> <?php
 }
 
 function query_comments_table( $bias ) {
