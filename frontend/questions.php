@@ -1,6 +1,14 @@
 <?php
 //INITIALIZE SESSION VARIABLES IF VISITING FOR THE FIRST TIME 
-session_start(); 
+
+$_SESSION['playing'] = isset($_SESSION['playing']) ? $_SESSION['playing'] : 0; 
+
+if ($_SESSION['playing'] == 0) {
+	show_intro();
+	initialise_round();
+	die();
+}
+ 
 $_SESSION['question'] = isset($_SESSION['question']) ? $_SESSION['question'] : 1; 
 $_SESSION['score'] = isset($_SESSION['score']) ? $_SESSION['score'] : 0; 
 
@@ -26,10 +34,7 @@ function ask_question() {
 	$_SESSION['wrong']= $comment_details['wrong'];
 	$_SESSION['correct']= $comment_details['correct'];
 
-	echo "<div id='wflf-round-stats'>";
-	echo "This is question number ". $_SESSION['question'] . "<br />";
-	echo "Your score is " . $_SESSION['score'];
-	echo "</div>";
+	echo "<div id='wflf-question-number'><h3>Question ". $_SESSION['question'] . "/10</h3></div>";
 
 	echo "<div id='wflf-comment'><p>" . $_SESSION['comment'] . "</p></div>";
 
@@ -44,9 +49,11 @@ function ask_question() {
 
 function present_score() { ?>
 	<div id="wflf-scorebox"><?php
-	echo "<p class='systemfont'>You scored</p> <span class='wflf-hugenum'>" . $_SESSION['score'] . "</span>";
+	echo "<p class='systemfont'>You scored</p> <span class='wflf-hugenum'>" . $_SESSION['score'] . "</span><br/>";
 	$_SESSION['score'] = 0; ?>
 	</div> <?php
+	echo "<a class='systemfont buttonlike' href='index.php'>Play again</a>";
+	$_SESSION['playing'] = 0;
 }
 
 function query_comments_table( $bias ) {
@@ -135,5 +142,15 @@ function bias_comments() {
 	$result = rand( 1, 5 );
 	if ( $result > 1) { return false; 
 	} else return true; 
+}
+
+function show_intro() {
+	include('intro.php');
+}
+
+function initialise_round() {
+	$_SESSION['playing'] = 1;
+	// $_SESSION['question'] = isset($_SESSION['question']) ? $_SESSION['question'] : 1; 
+	echo "<div id='intro'><a href='index.php' class='systemfont buttonlike red-bg'>Start</p></div>";
 }
 ?>

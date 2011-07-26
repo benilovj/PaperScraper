@@ -130,6 +130,7 @@ class DailyMailScraper < Scraper
   def write_data
     i = 0
     @output[1..20].slice(1..-1).each do |comment| 
+		comment.gsub!(/^u[0-9][0-9]/) { |match| "\\" + match }
       i += 1
       $dbh.query("INSERT INTO comments (comment, url, paper)
         VALUES (\'#{comment}\', \'#{self.url}\', \'#{self.paper}\')"

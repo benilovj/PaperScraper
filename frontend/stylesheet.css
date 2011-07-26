@@ -16,6 +16,19 @@ html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abb
 	text-align: center;
 }
 
+.buttonlike {
+	font-size: 300%;
+	color: black;
+	background-color: #e1e1e1;
+	text-decoration: none;
+	margin: 10px 0px;
+}
+
+.modestlink {
+	color: #777777;
+	text-decoration: none;
+}
+
 #wflf-content-box, #response {
 	margin: 0 auto;
 	width:50%;
@@ -24,11 +37,19 @@ html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abb
 	line-height: 20px;
 }
 
+#intro {
+	text-align: center;
+}
+
 #wflf-content-box .wflf-hugenum {
 	font-size: 800%;
 	font-family: 'Helvetica', sans-serif;
 	color: red;
 	text-align: center;
+}
+
+#wflf-scorebox p.systemfont {
+	font-size: 200%;
 }
 
 #wflf-content-box #subheading {
@@ -44,16 +65,17 @@ html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abb
 }
 
 #wflf-content-box h2 {
+	font-family: 'Geo', sans-serif;
 	font-size: 300%;
 	font-weight: bold;
 	text-align: center;
-	padding: 20px 0px;
+	padding-bottom: 30px;
 }
 
 .wflf-broad-text {
-	font-family: 'Helvetica', sans-serif;
-	font-size: 90%;
+	font-family: 'Geo', sans-serif;
 	text-transform: uppercase;
+	letter-spacing: 0.5em;
 }
 
 #wflf-top-ten-table img {
@@ -66,12 +88,28 @@ html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abb
 	margin-left:20px;
 }
 
+#wflf-question-number {
+	float:left;
+	width: 200px;
+	font-size: 220%;
+	font-weight: bold;
+	font-family: 'Geo';
+}
+
+#wflf-comment {
+	clear:both;
+	padding-top: 20px;
+	font-size:120%;
+	line-height:24px;
+}
+
 #wflf-round-stats {
-	font-family: 'Helvetica', 'Arial', sans-serif;
-	text-transform: uppercase;
-	font-size: 60%;
+	float:right;
+	width:300px;
+	color: red;
+	font-family: 'Geo';
+	font-size: 220%;
 	text-align: right;
-	line-height: 15px;
 }
 
 #wflf-selection-buttons {
@@ -83,6 +121,8 @@ html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abb
 	width:200px;
 	padding: 0px 50px;
 	height:50px;
+	font-size:150%;
+	font-family: 'Geo';
 }
 
 #response { text-align: left; padding-bottom: 20px; }
@@ -95,7 +135,7 @@ html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abb
 #wflf-content-box {
 	text-align: left;
 	font-family: 'Ovo', serif;
-	padding-top:15px;
+	padding-top:50px;
 }
 
 .wflf-big-text {
@@ -113,9 +153,25 @@ html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abb
 }
 
 #header {
-	height: 65px;
+	height: 75px;
 	background-color: black;
 	color: white;
+}
+
+#header #startbutton {
+	float: left;
+}
+
+#header #startbutton a {
+	display:block;
+}
+
+.red-bg {
+	background-color: red;
+}
+
+.light-bg {
+	background-color: gray;
 }
 
 #header #branding {
@@ -133,8 +189,7 @@ html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abb
 }
 
 #header h2 {
-	font-size: 200%;
-	font-family: 'Ovo', serif;
+	font-size: 240%;
 }
 
 #header h2 a {
@@ -145,8 +200,8 @@ html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abb
 #header #menu ul {
 	padding:22px 10px;
 	float:right;
-	font-size: 120%;
-	font-family: 'Ovo', serif;
+	font-size: 140%;
+	font-family: 'Geo', serif;
 }
 
 #header ul li {
@@ -186,17 +241,17 @@ html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abb
 
 .footertext {
 	float: right;
-	font-family: 'Helvetica', sans-serif;
+	font-family: 'Geo', sans-serif;
 	padding: 6px 5px;
 	text-transform: uppercase;
-	font-size: 80%;
+	font-size: 90%;
 	letter-spacing: 0.1em;
 	color: #777777;
 }
 
 .footertext a {
 	text-decoration: none;
-	color: blue;
+	color: black;
 }
 
 #wflf-scorebox {

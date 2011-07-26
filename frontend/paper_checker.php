@@ -58,7 +58,11 @@ switch ($_SESSION['answer']) {
 display_trends(get_trends()); ?> </p></div><?php
 flag_if_deceptive($id);	
 echo "<div id='wflf-question-controls'>";
-echo "<a href=\"" . $_SESSION['url'] . "\">See the original article</a> <a href=\"index.php\">Next question</a><br />";
+
+$_SESSION['question'] != 10 ? $navigation_msg = "Next Question" : $navigation_msg="See how you did!";
+echo "<br /> <p class='centretext'><a class='systemfont buttonlike' href=\"index.php\">$navigation_msg</a><br />";
+
+echo "<a class='systemfont modestlink' href=\"" . $_SESSION['url'] . "\">See the original article</a>";
 echo "</div>";
 
 function flag_if_deceptive($id) {
