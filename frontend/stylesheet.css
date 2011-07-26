@@ -33,6 +33,14 @@ html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abb
 	margin: 10px 0px;
 }
 
+.buttonlike-tweetcolours {
+	font-size: 300%;
+	color: white;
+	background-color: #1c82ea;
+	text-decoration: none;
+	margin: 10px 0px;
+}
+
 .modestlink {
 	color: #777777;
 	text-decoration: none;

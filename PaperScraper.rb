@@ -190,9 +190,8 @@ class DataDruid
     remove_references_to_source
     remove_moderator_notices
     clean_empty_comments
-		remove_comments_with_malformed_chars
-    if @total_rows[0].to_i > 5000
-      trim_rows(@total_rows[0].to_i - 5000) 
+    if @total_rows[0].to_i > 1500
+      trim_rows(@total_rows[0].to_i - 1500) 
       # reset the id column or chaos will ensue
       $dbh.query("ALTER TABLE comments DROP COLUMN id;")
       $dbh.query("ALTER TABLE comments ADD id INT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -220,15 +219,14 @@ class DataDruid
   def remove_references_to_source
     $dbh.query("DELETE FROM `comments` WHERE comment regexp '[[:space:]]Mail'")
     $dbh.query("DELETE FROM `comments` WHERE comment regexp 'Guardian'")
+    $dbh.query("DELETE FROM `comments` WHERE comment regexp '===='")
+    $dbh.query("DELETE FROM `comments` WHERE comment regexp 'CiF'")
+    $dbh.query("DELETE FROM `comments` WHERE comment regexp 'DM'")
   end
 
   def remove_moderator_notices
     $dbh.query("DELETE FROM `comments` WHERE comment regexp 'This comment was removed by a moderator'")
   end
-
-	def remove_comments_with_malformed_chars
-    $dbh.query("DELETE FROM `comments` WHERE comment regexp 'This comment was removed by a moderator'")
-	end
 
   def clean_empty_comments
     $dbh.query("DELETE FROM `comments` WHERE comment = ''")
