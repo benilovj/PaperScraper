@@ -36,12 +36,12 @@
 <h2 class="systemfont"><a href="index.php">Mail or Guardian?</a></h2>
 <p class="tagline">An absurd guessing game</p>
 </div>
-<div id="startbutton">
 <?php if (!isset($_SESSION['playing'])) { $_SESSION['playing'] = 0; } ?>
-<?php if (isset($_SESSION['playing']) && $_SESSION['playing'] == 1 && isset($_SESSION['question']) && $_SESSION['question'] > 1) { ?>
+<?php if ($_SESSION['playing'] == 1 && isset($_SESSION['question']) && $_SESSION['question'] > 1) { ?>
+<div id="startbutton">
 	 <a href="index.php?action=reset" class="systemfont buttonlike light-bg">Start again</a></div>
-<?php } else { ?>
-	 <a href="index.php" class="systemfont buttonlike red-bg">Start</a></div>
+<?php } elseif (isset($_SESSION['restarting']) && $_SESSION['restarting'] == 1) { $_SESSION['playing'] = 1; $_SESSION['question'] = 1; ?>
+	 <!-- <a href="index.php" class="systemfont buttonlike red-bg">Start</a></div> -->
 <?php } ?>
 <div id="menu">
 <ul>

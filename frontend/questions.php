@@ -6,6 +6,8 @@ $_SESSION['playing'] = isset($_SESSION['playing']) ? $_SESSION['playing'] : 0;
 if ($_SESSION['playing'] == 0) {
 	show_intro();
 	initialise_round();
+	echo "</div></div>"; //close out divs from index.php as we're having to die();
+	include 'footer.php';
 	die();
 }
  
@@ -15,7 +17,7 @@ $_SESSION['score'] = isset($_SESSION['score']) ? $_SESSION['score'] : 0;
 ?> 
 <?php
 
-if(isset($_SESSION['question']) && $_SESSION['question'] < 10) {
+if(isset($_SESSION['question']) && $_SESSION['question'] <= 10 && $_SESSION['playing'] != 0 ) {
 	ask_question();
 	} else {
 	present_score();
@@ -48,11 +50,15 @@ function ask_question() {
 }
 
 function present_score() { ?>
-	<div id="wflf-scorebox"><?php
-	echo "<p class='systemfont'>You scored</p> <span class='wflf-hugenum'>" . $_SESSION['score'] . "</span><br/>";
-	$_SESSION['score'] = 0; ?>
-	</div> <?php
-	echo "<a class='systemfont buttonlike' href='index.php'>Play again</a>";
+	<?php if ($_SESSION['score'] == 10) { echo "<div id='winner-image'><img src='images/welldone.gif' alt='well done!' /></div>"; } ?>
+	<div id="wflf-scorebox">
+<?php
+	echo "<p class='systemfont'>You scored</p> <span class='wflf-hugenum'>" . $_SESSION['score'] . "</span><br/>"; ?>
+	</div> 
+<?php
+	echo "<div class='centretext'><a class='systemfont buttonlike final' href='http://twitter.com/home?status=I scored a respectable ". $_SESSION['score'] . "/10! at http://wiflufu.com/mail-or-guardian'>Tweet your score!</a></div>";
+	echo "<div class='centretext'><a class='systemfont buttonlike' href='index.php'>Play again</a></div>";
+	$_SESSION['score'] = 0;
 	$_SESSION['playing'] = 0;
 }
 
@@ -149,8 +155,10 @@ function show_intro() {
 }
 
 function initialise_round() {
-	$_SESSION['playing'] = 1;
+	$_SESSION['playing'] = 0;
+	$_SESSION['restarting'] = 1;
+	$_SESSION['question'] = 0;
 	// $_SESSION['question'] = isset($_SESSION['question']) ? $_SESSION['question'] : 1; 
-	echo "<div id='intro'><a href='index.php' class='systemfont buttonlike red-bg'>Start</p></div>";
+	echo "<div id='intro'><a href='index.php' class='systemfont buttonlike red-bg'>Start</a></p></div>";
 }
 ?>

@@ -1,7 +1,6 @@
 <?php
 session_start();
 
-increase_question_counter();
 
 $guardianimage = "<img src='images/guardian.png' alt='It was from the Guardian' />";
 $mailimage="<img src ='images/mail.gif' alt='It was from the Daily Mail' />";
@@ -145,6 +144,7 @@ switch ($tone) {
 
 }
 
+increase_question_counter();
 mysql_close($db_handle);
 
 ?>

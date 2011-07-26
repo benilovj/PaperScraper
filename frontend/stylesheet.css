@@ -8,8 +8,17 @@ html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abb
 	font-family: 'Geo', sans-serif;
 }
 
+.final {
+	line-height: 120px;
+}
+
 .result {
 	font-size: 200%;
+}
+
+.a-bit-stronger {
+	font-weight: bold;
+	font-size:110%;
 }
 
 .centretext {
@@ -29,6 +38,11 @@ html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abb
 	text-decoration: none;
 }
 
+#winner-image {
+	margin: 0 auto;
+	width: 300px;
+}
+
 #wflf-content-box, #response {
 	margin: 0 auto;
 	width:50%;
@@ -39,6 +53,7 @@ html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abb
 
 #intro {
 	text-align: center;
+	margin-top:20px;
 }
 
 #wflf-content-box .wflf-hugenum {
@@ -90,7 +105,7 @@ html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abb
 
 #wflf-question-number {
 	float:left;
-	width: 200px;
+	width: 220px;
 	font-size: 220%;
 	font-weight: bold;
 	font-family: 'Geo';
@@ -198,7 +213,7 @@ html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abb
 }
 
 #header #menu ul {
-	padding:22px 10px;
+	padding:28px 10px;
 	float:right;
 	font-size: 140%;
 	font-family: 'Geo', serif;
