@@ -6,7 +6,9 @@
 <link rel="stylesheet" href="stylesheet.css" />
 <link href='http://fonts.googleapis.com/css?family=Geo&v2' rel='stylesheet' type='text/css'>
 <link href='http://fonts.googleapis.com/css?family=Ovo&v2' rel='stylesheet' type='text/css'>
-<!--[if !IE 7]>
+<link rel="icon" 
+      type="image/ico" 
+      href="favicon.ico"><!--[if !IE 7]>
 	<style type="text/css">
 		#wrap {display:table;height:100%}
 	</style>

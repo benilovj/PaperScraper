@@ -56,7 +56,7 @@ function present_score() { ?>
 	echo "<p class='systemfont'>You scored</p> <span class='wflf-hugenum'>" . $_SESSION['score'] . "</span><br/>"; ?>
 	</div> 
 <?php
-	echo "<div class='centretext'><a class='systemfont final buttonlike-tweetcolours' href='http://twitter.com/home?status=I scored a respectable ". $_SESSION['score'] . "/10! at http://wiflufu.com/mail-or-guardian'>Tweet your score!</a></div>";
+	echo "<div class='centretext'><a class='systemfont final buttonlike-tweetcolours' href='http://twitter.com/home?status=I scored a respectable ". $_SESSION['score'] . "/10 on the Mail/Guardian game at http://wiflufu.com/mail-or-guardian #mailorguardian'>Tweet your score!</a></div>";
 	echo "<div class='centretext'><a class='systemfont buttonlike' href='index.php'>Play again</a></div>";
 	$_SESSION['score'] = 0;
 	$_SESSION['playing'] = 0;

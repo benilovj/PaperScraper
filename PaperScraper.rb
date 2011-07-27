@@ -190,6 +190,7 @@ class DataDruid
     remove_references_to_source
     remove_moderator_notices
     clean_empty_comments
+		clean_failed_encodings
     if @total_rows[0].to_i > 1500
       trim_rows(@total_rows[0].to_i - 1500) 
       # reset the id column or chaos will ensue
@@ -231,6 +232,11 @@ class DataDruid
   def clean_empty_comments
     $dbh.query("DELETE FROM `comments` WHERE comment = ''")
   end
+
+	#make this redundant somehow
+	def clean_failed_encodings
+		$dbh.query("delete from comments where comment regexp 'u00';")
+	end
        
 end
 
