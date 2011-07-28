@@ -1,4 +1,4 @@
-db-config.rb
-Mail
 Guardian
+Mail
 log
+*.sqlite

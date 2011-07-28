@@ -13,17 +13,60 @@ $script_path = File.expand_path(File.dirname(__FILE__))
 require 'open-uri'
 require 'hpricot'
 require 'mechanize'
-require 'mysql'
 require 'rss/2.0'
 require 'iconv'
+require 'logger'
 
-#set up db connection
-require $script_path + '/db-config'
-$db_user = Database.new.db_user
-$db_pass = Database.new.db_pass
-$dbh = Mysql.real_connect("localhost", $db_user, $db_pass, "papers")
+require 'active_record'
+environment = ENV['ENVIRONMENT'] || 'development'
+dbconf = YAML::load(File.open('config/databases.yml'))[environment]
+ActiveRecord::Base.establish_connection(dbconf) 
+ActiveRecord::Base.logger = Logger.new(File.open('log/database.log', 'a'))
 
-$papers = ['Mail', 'Guardian']
+class Comment < ActiveRecord::Base
+  MAXIMUM_NUMBER_OF_COMMENTS = 1500
+  REFERENCES_TO_SOURCE = [" Mail", "Guardian", "====", "Cif", "DM"]
+  JUNK = ['This comment was removed by a moderator', 'u00']
+  
+  validates_presence_of :comment
+  validate :absence_of_references_to_source
+  validate :absence_of_junk
+  
+  class << self 
+    def mail
+      self.where(:paper => 'Daily Mail')
+    end
+    
+    def guardian
+      self.where(:paper => 'Guardian')
+    end
+    
+    def keep_only_latest_comments
+      delete_all(["created_at < ?", cutoff_timestamp])
+    end
+
+    def cutoff_timestamp
+      self.find(:all, :order => "created_at desc", :limit => MAXIMUM_NUMBER_OF_COMMENTS).last.created_at
+    end
+  end
+  
+  protected
+  def absence_of_references_to_source
+    REFERENCES_TO_SOURCE.each do |reference_to_source|
+      errors.add(:comment, "cannot contain reference to source: #{reference_to_source}") if
+            comment =~ Regexp.new(reference_to_source, Regexp::IGNORECASE)
+    end
+  end
+
+  def absence_of_junk
+    JUNK.each do |junk|
+      errors.add(:comment, "cannot contain junk: #{junk}") if
+            comment =~ Regexp.new(junk, Regexp::IGNORECASE)
+    end
+  end
+end
+
+PAPERS = ['Mail', 'Guardian']
 
 class Commissioner 
    
@@ -45,24 +88,18 @@ class Commissioner
   end
 
   def complete_cycle
-    puts "Connecting to DB..."
-    $dbh = Mysql.real_connect("localhost", $db_user, $db_pass, "papers")
     puts "Housekeeping..."
     commission_feeds
     balance_data
     puts "Scraping..."
     run_scrape
-    $dbh.close
   end
 
   def just_a_scrape
-    puts "Connecting to DB..."
-    $dbh = Mysql.real_connect("localhost", $db_user, $db_pass, "papers")
     puts "Checking databases..."
     balance_data
     puts "Scraping began at #{Time.now}..."
     run_scrape
-    $dbh.close  
     puts "Scraping complete at #{Time.now}"
   end   
 end   
@@ -130,30 +167,27 @@ class DailyMailScraper < Scraper
   def write_data
     i = 0
     @output[1..20].slice(1..-1).each do |comment| 
-		comment.gsub!(/^u[0-9][0-9]/) { |match| "\\" + match }
+      comment.gsub!(/^u[0-9][0-9]/) { |match| "\\" + match }
       i += 1
-      $dbh.query("INSERT INTO comments (comment, url, paper)
-        VALUES (\'#{comment}\', \'#{self.url}\', \'#{self.paper}\')"
-      )
-      end
+      Comment.create(:comment => comment, :url => url, :paper => paper).save!
+    end
     puts "Number of Daily Mail comments inserted: #{i}"
   end 
   
 end
 
 class GuardianScraper < Scraper
-  
   def initialize ( url )
     @url = url
     @scrape = open(url)
     @paper = "Guardian"
   end
 
-	protected
+  protected
 
   def download_comments
-		@scrape.rewind
-		comments = Hpricot(Iconv.conv('utf-8', @scrape.charset, @scrape.readlines.join("\n"))).search("div[@class='comment-body']")
+    @scrape.rewind
+    comments = Hpricot(Iconv.conv('utf-8', @scrape.charset, @scrape.readlines.join("\n"))).search("div[@class='comment-body']")
   end
   
   def to_array (comments)
@@ -166,78 +200,37 @@ class GuardianScraper < Scraper
     i = 0
     self.output[1..20].slice(1..-1).each do |comment| 
       i += 1
-      $dbh.query("INSERT INTO comments (comment, url, paper)
-         VALUES (\'#{comment.escape_single_quotes.strip}\', \'#{self.url}\', \'#{self.paper}\')"
-        )
-      end
+      Comment.create(:comment => comment.escape_single_quotes.strip, :url => url, :paper => paper).save!
+    end
     puts "Number of Guardian comments inserted: #{i}"
-  end 
-
-end   
+  end
+end
 
 #database functions and maintenance
 
 class DataDruid
 
   def initialize
-    @mail_comments = $dbh.query("SELECT COUNT(*) FROM comments WHERE paper = 'Daily Mail'").fetch_row
-    @guardian_comments = $dbh.query("SELECT COUNT(*) FROM comments WHERE paper = 'Guardian'").fetch_row
-    @total_rows = $dbh.query("SELECT COUNT(*) FROM comments WHERE 1 = 1").fetch_row
-    puts "Table status: #{@guardian_comments[0]} Guardian comments. #{@mail_comments[0]} Daily Mail comments."
+    @mail_comment_count = Comment.mail.count
+    @guardian_comment_count = Comment.guardian.count
+    puts "Table status: #{@guardian_comment_count} Guardian comments. #{@mail_comment_count} Daily Mail comments."
   end
 
   def table_maintenance
-    remove_references_to_source
-    remove_moderator_notices
-    clean_empty_comments
-		clean_failed_encodings
-    if @total_rows[0].to_i > 1500
-      trim_rows(@total_rows[0].to_i - 1500) 
-      # reset the id column or chaos will ensue
-      $dbh.query("ALTER TABLE comments DROP COLUMN id;")
-      $dbh.query("ALTER TABLE comments ADD id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-                              ADD PRIMARY KEY (id);")
-      puts "Database was pruned"  
-      end
+    Comment.keep_only_latest_comments
   end
-
-	def prescribe_comments
-		if @guardian_comments[0].to_i > (@mail_comments[0].to_i + 20)
-				prescription = ["Mail"]
-		elsif @mail_comments[0].to_i > (@guardian_comments[0].to_i + 20)
-				prescription = ["Guardian"]
-		else 
-				prescription = ["Mail", "Guardian"]
-		end
-	end
+  
+  def prescribe_comments
+    if @guardian_comment_count > (@mail_comment_count + 20)
+        prescription = ["Mail"]
+    elsif @mail_comment_count > (@guardian_comment_count + 20)
+        prescription = ["Guardian"]
+    else 
+        prescription = ["Mail", "Guardian"]
+    end
+  end
  
-	private
-
-  def trim_rows( numberofrows )
-    $dbh.query("DELETE FROM comments WHERE id < #{numberofrows.to_i}")
-  end
-    
-  def remove_references_to_source
-    $dbh.query("DELETE FROM `comments` WHERE comment regexp '[[:space:]]Mail'")
-    $dbh.query("DELETE FROM `comments` WHERE comment regexp 'Guardian'")
-    $dbh.query("DELETE FROM `comments` WHERE comment regexp '===='")
-    $dbh.query("DELETE FROM `comments` WHERE comment regexp 'CiF'")
-    $dbh.query("DELETE FROM `comments` WHERE comment regexp 'DM'")
-  end
-
-  def remove_moderator_notices
-    $dbh.query("DELETE FROM `comments` WHERE comment regexp 'This comment was removed by a moderator'")
-  end
-
-  def clean_empty_comments
-    $dbh.query("DELETE FROM `comments` WHERE comment = ''")
-  end
-
-	#make this redundant somehow
-	def clean_failed_encodings
-		$dbh.query("delete from comments where comment regexp 'u00';")
-	end
-       
+  private
 end
 
 class ArticleUrls
@@ -268,7 +261,7 @@ end
 class RSSDruid
 
   def maintain_feeds
-    $papers.each do |paper|
+    PAPERS.each do |paper|
       if time_to_replenish?(paper)
         urlset = eval( paper + "Urls.new.get_urls")
         urlset[1..10].each do |url|
@@ -277,10 +270,10 @@ class RSSDruid
         end # urlset iterator
       end #time to replenish if
       remove_duplicates(paper)        
-      end #papers iterator
+    end #papers iterator
   end
 
-	private
+  private
 
   def time_to_replenish? ( file )
     begin
@@ -312,9 +305,9 @@ class ScraperDruid
 
   def invoke_scraper
     if @prescription.include? "Mail"
-      DailyMailScraper.new(FileClipper.new('Mail', 'log').get_line).scrape end
+      DailyMailScraper.new(FileClipper.new('Mail', 'log/story.log').get_line).scrape end
     if @prescription.include? "Guardian"
-      GuardianScraper.new(FileClipper.new('Guardian', 'log').get_line).scrape end
+      GuardianScraper.new(FileClipper.new('Guardian', 'log/story.log').get_line).scrape end
   end
 
 end 
@@ -335,7 +328,7 @@ class FileClipper
     line
   end
 
-	private
+  private
 
   def next_line
     queue = []
