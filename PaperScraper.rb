@@ -115,13 +115,13 @@ class Scraper
   end
   
   protected
-  def persist(comments, article_url)
-    comments_to_save = comments.take(20)
-    comments_to_save.each do |comment| 
-      comment = Comment.create(:comment => comment, :url => article_url, :paper => @paper)
-      comment.save if comment.valid?
+  def persist(plain_text_comments, article_url)
+    candidates = plain_text_comments.take(20).map do |comment|
+      Comment.create(:comment => comment, :url => article_url, :paper => @paper)
     end
-    puts "Number of #{@paper} comments inserted: #{comments_to_save.size}"
+    comments = candidates.select(&:valid?)
+    comments.map(&:save)
+    puts "Number of #{@paper} comments inserted: #{comments.size}"
   end
 end 
 
