@@ -1,7 +1,7 @@
 require 'logger'
 require 'active_record'
 
-environment = ENV['ENVIRONMENT'] || 'development'
+ENVIRONMENT = ENV['ENVIRONMENT'] || 'development'
 dbconf = YAML::load(File.open('config/databases.yml'))[environment]
 ActiveRecord::Base.establish_connection(dbconf)
 

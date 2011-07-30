@@ -6,13 +6,8 @@ require 'yaml'
 require 'PaperScraper'
 
 namespace :db do
-  task :environment do
-    DATABASE_ENV = ENV['DATABASE_ENV'] || 'development'
-    MIGRATIONS_DIR = ENV['MIGRATIONS_DIR'] || 'db/migrate'
-  end
-
-  task :configuration => :environment do
-    @config = YAML.load_file('config/databases.yml')[DATABASE_ENV]
+  task :configuration do
+    @config = YAML.load_file('config/databases.yml')[ENVIRONMENT]
   end
   
   task :configure_connection => :configuration do
@@ -23,14 +18,14 @@ namespace :db do
   desc 'Migrate the database (options: VERSION=x, VERBOSE=false).'
   task :migrate => :configure_connection do
     ActiveRecord::Migration.verbose = true
-    ActiveRecord::Migrator.migrate MIGRATIONS_DIR, ENV['VERSION'] ? ENV['VERSION'].to_i : nil
+    ActiveRecord::Migrator.migrate 'db/migrate', ENV['VERSION'] ? ENV['VERSION'].to_i : nil
   end
 end
 
 namespace :scraper do
-  task :balance_data do
+  task :cap_number_of_comments do
     puts "Table status: #{Comment.guardian.count} Guardian comments. #{Comment.mail.count} Daily Mail comments."
-    puts "Balancing data..."
+    puts "Capping the maximum amount of comments..."
     Comment.keep_only_latest_comments
     puts "Table status: #{Comment.guardian.count} Guardian comments. #{Comment.mail.count} Daily Mail comments."
   end
@@ -58,8 +53,8 @@ namespace :scraper do
   end
   
   desc "Downloads the comments from articles"
-  task :execute => [:balance_data, :run_scrape]
+  task :execute => [:cap_number_of_comments, :run_scrape]
 
   desc "Updates the list of articles"
-  task :maintain => [:replenish_article_lists, :balance_data]
+  task :maintain => [:replenish_article_lists, :cap_number_of_comments]
 end
