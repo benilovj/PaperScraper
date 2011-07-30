@@ -1,0 +1,13 @@
+/	<?php if ($_SESSION['score'] == 10) { echo "<div id='winner-image'><img src='images/welldone.gif' alt='well done!' /></div>"; } ?>
+#wflf-scorebox
+  %p.systemfont You scored
+  %span.wflf-hugenum $_SESSION['score']
+  %br
+   
+.centretext
+  %a.systemfont.final.buttonlike-tweetcolours {:href => "http://twitter.com/home?status=I scored a respectable #{session['score']} /10 on the Mail/Guardian game at http://wiflufu.com/mail-or-guardian #mailorguardian"} Tweet your score!
+
+.centretext
+  %a.systemfont.buttonlike {:href=> '/index'} Play again
+/	$_SESSION['score'] = 0;
+/	$_SESSION['playing'] = 0;

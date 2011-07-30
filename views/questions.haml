@@ -1,23 +1,19 @@
-<?php
-//INITIALIZE SESSION VARIABLES IF VISITING FOR THE FIRST TIME 
+#wflf-question-number
+  %h3 Question =session['question'] /10
 
-$_SESSION['playing'] = isset($_SESSION['playing']) ? $_SESSION['playing'] : 0; 
+#wflf-comment
+  %p $_SESSION['comment']
+  
+#wflf-selection-buttons
+  %form.paper-form {:name => "input", :action => "paper_checker.php", :method => "post"
+    %input {:type => "hidden", :name => "mail"}
+    %input {:type => "hidden", :name => "guardian"}
+    %input.mail {:type => "submit", :name => "mail", :value => "Mail"}
+    %input.mail {:type => "submit", :name => "guardian", :value => "Guardian"}
 
-if ($_SESSION['playing'] == 0) {
-	show_intro();
-	initialise_round();
-	echo "</div></div>"; //close out divs from index.php as we're having to die();
-	include 'footer.php';
-	die();
-}
- 
-$_SESSION['question'] = isset($_SESSION['question']) ? $_SESSION['question'] : 1; 
-$_SESSION['score'] = isset($_SESSION['score']) ? $_SESSION['score'] : 0; 
-
-?> 
 <?php
 
-if(isset($_SESSION['question']) && $_SESSION['question'] <= 10 && $_SESSION['playing'] != 0 ) {
+if($_SESSION['question'] <= 10 && $_SESSION['playing'] != 0 ) {
 	ask_question();
 	} else {
 	present_score();

@@ -12,15 +12,19 @@ enable :sessions
 end
 
 get '/index' do
-  if not params["reset"].nil?
+  if params["action"] == "reset"
     session[:playing] = true
     session[:score] = 0
-    session[:question] = 0
+    session[:question] = 1
   end
   
-  if not session[:playing]
-    haml :intro
+  if session[:playing]
+    if session[:score] <= 10
+      haml :questions
+    else
+      haml :present_score
+    end
   else
-    haml :question
+    haml :intro
   end
 end
