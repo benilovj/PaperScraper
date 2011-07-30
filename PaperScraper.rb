@@ -6,7 +6,8 @@
 #Version 0.1
 
 $: << File.expand_path(File.dirname(__FILE__))
-$script_path = File.expand_path(File.dirname(__FILE__))
+
+require 'config/env'
 
 require 'open-uri'
 require 'rss/2.0'
@@ -15,15 +16,6 @@ require 'ostruct'
 
 require 'hpricot'
 require 'mechanize'
-require 'logger'
-require 'active_record'
-
-environment = ENV['ENVIRONMENT'] || 'development'
-dbconf = YAML::load(File.open('config/databases.yml'))[environment]
-ActiveRecord::Base.establish_connection(dbconf)
-
-FileUtils.mkdir('log') unless Dir.exists?('log')
-ActiveRecord::Base.logger = Logger.new(File.open('log/database.log', 'a'))
 
 class Comment < ActiveRecord::Base
   MAXIMUM_NUMBER_OF_COMMENTS = 1500

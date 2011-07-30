@@ -1,7 +1,0 @@
-<?php include 'header.php'; ?>
-<div id = "wflf-content-box">
-<h2>why?</h2>
-<p>The readers of the Mail and the Guardian have a reputation for being sworn enemies. But can you tell them apart? In the tradition of the British press, this website takes their comments out of context and offers them up for public judgment.</p>
-<p>Free from cumbersome background information, judge others on the formation of their sentences and what you can guess of their views. And then inspect the 'top scores' to see how others have interpreted things.</p> 
-</div>
-<?php include 'footer.php'; ?>

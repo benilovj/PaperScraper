@@ -1,0 +1,57 @@
+!!! Strict
+%html
+  %head
+    %title Mail or Guardian?
+    %link{:href => "stylesheet.css", :rel => "stylesheet"}/
+    %link{:href => "http://fonts.googleapis.com/css?family=Geo&v2", :rel => "stylesheet", :type => "text/css"}
+      %link{:href => "http://fonts.googleapis.com/css?family=Ovo&v2", :rel => "stylesheet", :type => "text/css"}
+        %link{:href => "favicon.ico", :rel => "icon", :type => "image/ico"}
+          /[if !IE 7]
+            <style type="text/css">
+            \#wrap {display:table;height:100%}
+            </style>
+          %script{:src => "//ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js", :type => "text/javascript"}
+          %script{:src => "comment-ajax.js", :type => "text/javascript"}
+          %script{:src => "colours.js", :type => "text/javascript"}
+          :javascript
+            var _gaq = _gaq || [];
+            _gaq.push(['_setAccount', 'UA-24770572-1']);
+            _gaq.push(['_trackPageview']);
+
+            (function() {
+              var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+              ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+              var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+            })();
+
+      %body
+    #wrap
+      #header
+        #branding
+          %h2.systemfont
+            %a{:href => "/"} Mail or Guardian?
+          %p.tagline An absurd guessing game
+        #startbutton
+          %a.systemfont.buttonlike.light-bg{:href => "index?action=reset"} Start again
+        #menu
+          %ul
+            %li
+              %a{:href => "/what"} what!?
+            %li
+              %a{:href => "/why"} why?
+            %li
+              %a{:href => "/how"} how?
+            %li
+              %a{:href => "/rankings/mail"} top Mail comments
+            %li
+              %a{:href => "/rankings/guardian"} top Guardian comments
+      = yield
+    / body
+    #footer
+      %p.footertext
+        An idea by
+        = succeed "," do
+          %a{:href => "http://twitter.com/jennylau"} @jennylau
+        implemented by
+        = succeed "." do
+          %a{:href => "http://twitter.com/duncanjbrown"} @duncanjbrown

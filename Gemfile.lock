@@ -16,6 +16,7 @@ GEM
     arel (2.1.4)
     bcrypt-ruby (2.1.4)
     builder (3.0.0)
+    haml (3.1.2)
     hpricot (0.8.4)
     i18n (0.6.0)
     mechanize (2.0.1)
@@ -27,7 +28,12 @@ GEM
     net-http-digest_auth (1.1.1)
     net-http-persistent (1.8)
     nokogiri (1.5.0)
+    rack (1.3.2)
+    sinatra (1.2.6)
+      rack (~> 1.1)
+      tilt (>= 1.2.2, < 2.0)
     sqlite3 (1.3.4)
+    tilt (1.3.2)
     tzinfo (0.3.29)
     webrobots (0.0.10)
       nokogiri (>= 1.4.4)
@@ -37,6 +43,8 @@ PLATFORMS
 
 DEPENDENCIES
   activerecord (= 3.1.0.rc4)
+  haml
   hpricot
   mechanize
+  sinatra
   sqlite3
