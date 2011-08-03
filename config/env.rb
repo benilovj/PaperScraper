@@ -2,7 +2,7 @@ require 'logger'
 require 'active_record'
 
 ENVIRONMENT = ENV['ENVIRONMENT'] || 'development'
-dbconf = YAML::load(File.open('config/databases.yml'))[environment]
+dbconf = YAML::load(File.open('config/databases.yml'))[ENVIRONMENT]
 ActiveRecord::Base.establish_connection(dbconf)
 
 FileUtils.mkdir('log') unless Dir.exists?('log')
