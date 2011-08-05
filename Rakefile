@@ -1,36 +1,44 @@
-require "bundler/setup"
+require 'bundler/setup'
 
 $: << File.expand_path(File.dirname(__FILE__))
 
-require 'yaml'
-require 'PaperScraper'
+require 'rspec/core/rake_task'
 
-namespace :db do
-  task :configuration do
-    @config = YAML.load_file('config/databases.yml')[ENVIRONMENT]
-  end
-  
+task :configuration do
+  require 'yaml'
+  @config = YAML.load_file('config/databases.yml')[ENVIRONMENT]
+
+  require 'PaperScraper'
+end
+
+namespace :db do  
   task :configure_connection => :configuration do
     ActiveRecord::Base.establish_connection @config
     ActiveRecord::Base.logger = Logger.new STDOUT if @config['logger']
   end
   
-  desc 'Migrate the database (options: VERSION=x, VERBOSE=false).'
+  desc 'Migrate the database (options: VERSION=x).'
   task :migrate => :configure_connection do
     ActiveRecord::Migration.verbose = true
     ActiveRecord::Migrator.migrate 'db/migrate', ENV['VERSION'] ? ENV['VERSION'].to_i : nil
   end
 end
 
+desc "Run all examples"
+RSpec::Core::RakeTask.new(:spec) do |t|
+  t.rspec_opts = %w[--color]
+  t.verbose = false
+end
+
 namespace :scraper do
-  task :cap_number_of_comments do
+  task :cap_number_of_comments => :configuration do
     puts "Table status: #{Comment.guardian.count} Guardian comments. #{Comment.mail.count} Daily Mail comments."
     puts "Capping the maximum amount of comments..."
     Comment.keep_only_latest_comments
     puts "Table status: #{Comment.guardian.count} Guardian comments. #{Comment.mail.count} Daily Mail comments."
   end
   
-  task :run_scrape do
+  task :run_scrape => :configuration do
     puts "Scraping began at #{Time.now}..."
     mail_comment_count = Comment.mail.count
     guardian_comment_count = Comment.guardian.count
@@ -47,7 +55,7 @@ namespace :scraper do
     puts "Scraping complete at #{Time.now}"
   end
   
-  task :replenish_article_lists do
+  task :replenish_article_lists => :configuration do
     puts "Started replenishing article lists at #{Time.now}"
     PAPERS.select(&:time_to_replenish?).each(&:replenish_article_urls)
   end

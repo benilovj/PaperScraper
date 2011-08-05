@@ -33,6 +33,11 @@ class Comment < ActiveRecord::Base
       self.where(:paper => 'Guardian')
     end
     
+    def random
+      # TODO: make this random!
+      self.find(:first)
+    end
+    
     def keep_only_latest_comments
       delete_all(["created_at < ?", cutoff_timestamp]) if self.count > MAXIMUM_NUMBER_OF_COMMENTS
     end

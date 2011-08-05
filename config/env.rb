@@ -1,3 +1,5 @@
+require 'bundler/setup'
+
 require 'logger'
 require 'active_record'
 require 'fileutils'
