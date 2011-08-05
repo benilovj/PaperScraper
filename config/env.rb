@@ -1,5 +1,6 @@
 require 'logger'
 require 'active_record'
+require 'fileutils'
 
 ENVIRONMENT = ENV['ENVIRONMENT'] || 'development'
 dbconf = YAML::load(File.open('config/databases.yml'))[ENVIRONMENT]
