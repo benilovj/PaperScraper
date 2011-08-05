@@ -5,8 +5,6 @@
 #A script to harvest comments from the Daily Mail and Guardian websites and write them to a database, keeping the two sources equally represented
 #Version 0.1
 
-$: << File.expand_path(File.dirname(__FILE__))
-
 require 'config/env'
 
 require 'open-uri'
