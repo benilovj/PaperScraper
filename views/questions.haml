@@ -5,6 +5,6 @@
   %p= @game.text_of_comment_to_be_guessed
   
 #wflf-selection-buttons
-  %form.paper-form{:name => "input", :action => "index", :method => "post" }
+  %form.paper-form{:name => "input", :action => "/game", :method => "post" }
     %input.mail{ :type => "submit", :name => "mail", :value => "Mail" }
     %input.mail{ :type => "submit", :name => "guardian", :value => "Guardian" }

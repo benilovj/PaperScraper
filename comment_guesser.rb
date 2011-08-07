@@ -9,37 +9,35 @@ require 'lib/game'
 require 'PaperScraper'
 
 set :haml, {:format => :html5 }
-use Rack::Session::Pool, :expire_after => 2592000
+use Rack::Session::Pool, :expire_after => 60 * 60 * 24 * 30
 
-[:what, :why, :how].each do |path|
+[:what, :why, :how, :intro].each do |path|
   get "/#{path}" do
     haml path
   end
 end
 
-get '/index' do
-  unless session[:game]
-    session[:game] = Game.new.to_yaml
-    return haml :intro
-  end
-  @game = YAML.load(session[:game])
-  unless @game.finished?
-    haml :questions
-  else
-    haml :present_score
-  end
+get "/" do
+  redirect to("/intro")
 end
 
-post '/index' do
-  unless session[:game]
-    session[:game] = Game.new.to_yaml
-    return haml :intro
-  end
+before '/game' do
+  session[:game] = Game.new.to_yaml unless session[:game]
+  @game = YAML.load(session[:game])
+end
+
+get '/game' do
+  return haml :questions unless @game.finished?
+  haml :present_score
+end
+
+post '/game' do
   if params["mail"] or params["guardian"]
-    @game = YAML.load(session[:game])
     @game.answer = params["mail"] || params["guardian"]
-    session[:game] = @game.to_yaml
   end
-  
-  redirect '/index'
+  redirect to('/game')
+end
+
+after '/game' do
+  session[:game] = @game.to_yaml
 end
