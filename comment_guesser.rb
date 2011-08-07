@@ -37,13 +37,12 @@ get '/game' do
   haml :present_score
 end
 
-post '/game' do
-  if params["mail"] or params["guardian"]
-    @game.answer = params["mail"] || params["guardian"]
-  end
+post '/game/answer/:paper' do |paper|
+  pass unless @game.valid_choice?(paper)
+  @game.answer = paper
   redirect to('/game')
 end
 
-after '/game' do
+after /game/ do
   session[:game] = @game.to_yaml
 end

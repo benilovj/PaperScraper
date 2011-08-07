@@ -34,6 +34,15 @@ describe Game do
     it "should provide the comment number" do
       game.comment_number.should == 1
     end
+    
+    it "should provide the list of possible answers" do
+      game.should be_a_valid_choice("guardian")
+      game.should be_a_valid_choice("Guardian")
+      game.should be_a_valid_choice("Mail")
+      game.should be_a_valid_choice("mail")
+
+      game.should_not be_a_valid_choice("independent")
+    end
   end
 
   context "after one answer" do

@@ -38,6 +38,10 @@ class Game
     comment_to_be_guessed.answer = guess
   end
   
+  def valid_choice?(choice)
+    ["guardian", "mail"].include?(choice.downcase)
+  end
+  
   protected
   def comment_to_be_guessed    
     @comments_answers << CommentAndAnswerPair.new(Comment.random) if @comments_answers.all?(&:completed?)
