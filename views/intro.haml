@@ -7,4 +7,5 @@
   %p.a-bit-stronger Do badly and we're back in the dark ages.
   
   #intro
-    %a.systemfont.buttonlike.red-bg{ :href => '/game' } Start
+    %form{:name => "input", :action => "/game/new", :method => "post" }
+      %input.systemfont.buttonlike.red-bg{ :type => "submit", :name => "submit", :value => "Start" }

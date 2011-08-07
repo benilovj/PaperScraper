@@ -7,6 +7,7 @@ $: << File.expand_path(File.dirname(__FILE__))
 
 require 'lib/game'
 require 'PaperScraper'
+require 'haml'
 
 set :haml, {:format => :html5 }
 use Rack::Session::Pool, :expire_after => 60 * 60 * 24 * 30
@@ -21,9 +22,14 @@ get "/" do
   redirect to("/intro")
 end
 
-before '/game' do
+before /game/ do
   session[:game] = Game.new.to_yaml unless session[:game]
   @game = YAML.load(session[:game])
+end
+
+post '/game/new' do
+  @game = Game.new
+  redirect to('/game')
 end
 
 get '/game' do

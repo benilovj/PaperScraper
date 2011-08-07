@@ -32,7 +32,9 @@
             %a{:href => "/"} Mail or Guardian?
           %p.tagline An absurd guessing game
         #startbutton
-          %a.systemfont.buttonlike.light-bg{:href => "index?action=reset"} Start again
+          %form{:name => "input", :action => "/game/new", :method => "post" }
+            %input.systemfont.buttonlike.light-bg{ :type => "submit", :name => "submit", :value => "Start again" }
+          
         #menu
           %ul
             %li
