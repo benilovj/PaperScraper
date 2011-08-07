@@ -3,28 +3,27 @@
 require 'bundler/setup'
 require 'sinatra'
 require 'yaml'
-$: << File.expand_path(File.dirname(__FILE__))
+require 'haml'
 
+$: << File.expand_path(File.dirname(__FILE__))
 require 'lib/game'
 require 'PaperScraper'
-require 'haml'
 
 set :haml, {:format => :html5 }
 use Rack::Session::Pool, :expire_after => 60 * 60 * 24 * 30
 
-[:what, :why, :how, :intro].each do |path|
+get "/" do
+  haml :intro
+end
+
+[:what, :why, :how].each do |path|
   get "/#{path}" do
     haml path
   end
 end
 
-get "/" do
-  redirect to("/intro")
-end
-
 before /game/ do
-  session[:game] = Game.new.to_yaml unless session[:game]
-  @game = YAML.load(session[:game])
+  @game = session[:game] ? YAML.load(session[:game]) : Game.new
 end
 
 post '/game/new' do
@@ -33,8 +32,11 @@ post '/game/new' do
 end
 
 get '/game' do
-  return haml :question unless @game.finished?
-  haml :present_score
+  if @game.finished?
+    haml :present_score
+  else
+    haml :question
+  end
 end
 
 post '/game/answer/:paper' do |paper|
