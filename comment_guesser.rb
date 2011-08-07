@@ -33,7 +33,7 @@ post '/game/new' do
 end
 
 get '/game' do
-  return haml :questions unless @game.finished?
+  return haml :question unless @game.finished?
   haml :present_score
 end
 
