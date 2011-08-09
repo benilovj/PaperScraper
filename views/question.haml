@@ -1,13 +1,15 @@
 #main
   #wflf-content-box
     #wflf-question-number
-      %h3 Question #{@game.comment_number} /10
+      %h3 Question #{@game.current_question.number} /10
 
     #wflf-comment
-      %p= @game.text_of_comment_to_be_guessed
+      %p= @game.current_question.comment_text
   
     #wflf-selection-buttons
-      %form{:name => "input", :action => "/game/answer/mail", :method => "post" }
-        %input{ :type => "submit", :name => "mail", :value => "Mail" }
-      %form.paper-form{:name => "input", :action => "/game/answer/guardian", :method => "post" }
-        %input{ :type => "submit", :name => "guardian", :value => "Guardian" }
+      %form{ :name => "input", :action => "/game/answer/mail", :method => "post" }
+        .left_choice
+          %input{ :type => "submit", :name => "mail", :value => "Mail" }
+      %form.paper-form{ :name => "input", :action => "/game/answer/guardian", :method => "post" }
+        .right_choice
+          %input{ :type => "submit", :name => "guardian", :value => "Guardian" }

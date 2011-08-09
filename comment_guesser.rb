@@ -4,6 +4,7 @@ require 'bundler/setup'
 require 'sinatra'
 require 'yaml'
 require 'haml'
+require 'sass'
 
 $: << File.expand_path(File.dirname(__FILE__))
 require 'lib/game'
@@ -14,6 +15,10 @@ use Rack::Session::Pool, :expire_after => 60 * 60 * 24 * 30
 
 get "/" do
   haml :intro
+end
+
+get '/stylesheet.css' do
+  sass :stylesheet
 end
 
 [:what, :why, :how].each do |path|

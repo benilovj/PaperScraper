@@ -1,17 +1,21 @@
 require 'spec_helper'
 require 'game'
 
-describe CommentAndAnswerPair do
-  it { CommentAndAnswerPair.new(nil).should_not be_completed }
+describe Question do
+  it { Question.new(1, nil).should_not be_answered }
 
   it "should be completed as soon as it gets an answer" do
-    pair = CommentAndAnswerPair.new(nil)
-    pair.answer = "some answer"
-    pair.should be_completed
+    question = Question.new(1, nil)
+    question.answer = "some answer"
+    question.should be_answered
   end
 
   it "should return the text of the comment" do
-    CommentAndAnswerPair.new(mock(Comment, :comment => "xyz")).comment_text.should == "xyz"
+    Question.new(1, mock(Comment, :comment => "xyz")).comment_text.should == "xyz"
+  end
+  
+  it "should return the question number" do
+    Question.new(3, nil).number.should == 3
   end
 end
 
@@ -22,17 +26,17 @@ describe Game do
     it { should_not be_finished }
 
     it "should fetch the text of the first comment" do
-      Comment.should_receive(:random).and_return(mock(Comment, :comment => "Comment from DB"))    
-      game.text_of_comment_to_be_guessed.should == "Comment from DB"
+      Comment.should_receive(:random).and_return(mock(Comment, :comment => "Comment from DB"))
+      game.current_question.comment_text.should == "Comment from DB"
     end
 
     it "should hit the DB exactly once per comment" do
-      Comment.should_receive(:random).exactly(:once).and_return(mock(Comment, :comment => "Comment from DB"))    
-      2.times { game.text_of_comment_to_be_guessed.should == "Comment from DB"}
+      Comment.should_receive(:random).exactly(:once).and_return(mock(Comment, :comment => "Comment from DB"))
+      2.times { game.current_question.comment_text.should == "Comment from DB"}
     end
 
     it "should provide the comment number" do
-      game.comment_number.should == 1
+      game.current_question.number.should == 1
     end
     
     it "should provide the list of possible answers" do
@@ -52,8 +56,20 @@ describe Game do
     end
 
     it "should be on the second comment" do
-      @game.comment_number.should == 2
+      @game.current_question.number.should == 2
     end
+  end
+
+  context "after 10 questions and 9 answers" do
+    before do
+      @game = Game.new
+      Comment.stub!(:random).times.and_return(mock(Comment, :comment => "Comment from DB"))
+      
+      9.times { @game.answer = "Guardian" }
+      @game.current_question.comment_text
+    end
+    
+    it { @game.should_not be_finished }
   end
 
   context "after 10 answers" do

@@ -5,6 +5,7 @@ gem 'mechanize'
 gem 'activerecord', "3.1.0.rc4"
 gem 'sinatra'
 gem 'haml'
+gem 'sass'
 gem 'sqlite3'
 
 group :test do
