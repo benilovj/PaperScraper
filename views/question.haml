@@ -7,7 +7,7 @@
       %p= @game.current_question.comment_text
   
     #wflf-selection-buttons
-      %form{ :name => "input", :action => "/game/answer/mail", :method => "post" }
+      %form.paper-form{ :name => "input", :action => "/game/answer/mail", :method => "post" }
         .left_choice
           %input{ :type => "submit", :name => "mail", :value => "Mail" }
       %form.paper-form{ :name => "input", :action => "/game/answer/guardian", :method => "post" }
