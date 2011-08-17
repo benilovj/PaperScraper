@@ -26,7 +26,7 @@ class Comment < ActiveRecord::Base
   
   class << self 
     def mail
-      self.where(:paper => 'Daily Mail')
+      self.where(:paper => 'Mail')
     end
     
     def guardian
@@ -69,10 +69,8 @@ end
 
 class Paper < OpenStruct
   def replenish_article_urls
-    latest_article_urls().each do |url|
-      article = Article.create(:paper => name, :url => url)
-      article.save if article.valid?
-    end
+    candidate_articles = latest_article_urls.map{|url| Article.create(:paper => name, :url => url)}
+    candidate_articles.select(&:valid?).each(&:save)
   end
   
   def time_to_replenish?
@@ -84,7 +82,7 @@ class Paper < OpenStruct
     unless article.nil?
       article.consumed = true
       article.save
-      scraper.scrape(article.url)
+      scrape(article)
     end
   end
   
@@ -94,39 +92,27 @@ class Paper < OpenStruct
     feed = RSS::Parser.parse(content, false)
     feed.items.reverse.collect(&:link)
   end
-end
-
-class Scraper
-  def initialize(paper)
-    @paper = paper
-  end
   
-  def scrape(article_url)
-    comments = download_comments_from(article_url)
+  def scrape(article)
+    comments = scraper.download_comments_from(article.url)
     if comments.empty?
-      puts "#{@paper} article has no comments."
+      puts "#{name} article has no comments."
     else
-      persist(comments, article_url)
+      persist(comments, article)
     end
   end
   
-  protected
-  def persist(plain_text_comments, article_url)
+  def persist(plain_text_comments, article)
     candidates = plain_text_comments.take(20).map do |comment|
-      Comment.create(:comment => comment, :url => article_url, :paper => @paper)
+      Comment.create(:comment => comment, :url => article.url, :paper => self.name)
     end
     comments = candidates.select(&:valid?)
     comments.map(&:save)
-    puts "Number of #{@paper} comments inserted: #{comments.size}"
+    puts "Number of #{name} comments inserted: #{comments.size}"
   end
-end 
+end
 
-class MailScraper < Scraper
-  def initialize
-    super("Daily Mail")
-  end
-
-  protected
+class MailScraper
   def download_comments_from(article_url)
     _, article_path, article_id = article_url.match(/www.dailymail.co.uk(\/.*article-(\d+).*)$/).to_a
     response = Mechanize.new.post(
@@ -148,12 +134,7 @@ class MailScraper < Scraper
   end
 end
 
-class GuardianScraper < Scraper
-  def initialize
-    super("Guardian")
-  end
-
-  protected
+class GuardianScraper
   def download_comments_from(article_url)
     comment_nodes = []
     scrape = open(article_url) do |f|
@@ -164,13 +145,44 @@ class GuardianScraper < Scraper
   end   
 end
 
-PAPERS = [
-  { :name => 'Mail',     
-    :articles_rss_url => 'http://www.dailymail.co.uk/news/headlines/index.rss',
-    :scraper => MailScraper.new
-  },
-  { :name => 'Guardian',
-    :articles_rss_url => 'http://feeds.guardian.co.uk/theguardian/commentisfree/rss',
-    :scraper => GuardianScraper.new
-  }
-].collect {|map| Paper.new(map)}
+class Papers
+  def initialize
+    @papers = []
+  end
+  
+  def <<(paper)
+    @papers << paper
+  end
+  
+  def run_scrape
+    mail_comment_count = Comment.mail.count
+    guardian_comment_count = Comment.guardian.count
+    case
+    when guardian_comment_count > mail_comment_count + 20 then
+      prescription = find_by_name("Mail")
+    when mail_comment_count > guardian_comment_count + 20 then
+      prescription = find_by_name("Guardian")
+    else 
+      prescription = @papers
+    end
+    
+    prescription.each(&:scrape_next_unconsumed_article_if_exists)
+  end
+  
+  def replenish
+    @papers.select(&:time_to_replenish?).each(&:replenish_article_urls)
+  end
+  
+  protected
+  def find_by_name(name)
+    @papers.select {|paper| paper.name == name}
+  end
+end
+
+PAPERS = Papers.new
+PAPERS << Paper.new(:name => 'Mail',
+                    :articles_rss_url => 'http://www.dailymail.co.uk/news/headlines/index.rss',
+                    :scraper => MailScraper.new)
+PAPERS << Paper.new(:name => 'Guardian',
+                    :articles_rss_url => 'http://feeds.guardian.co.uk/theguardian/commentisfree/rss',
+                    :scraper => GuardianScraper.new)

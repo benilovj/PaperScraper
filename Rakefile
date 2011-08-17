@@ -6,9 +6,8 @@ require 'rspec/core/rake_task'
 
 task :configuration do
   require 'yaml'
-  @config = YAML.load_file('config/databases.yml')[ENVIRONMENT]
-
   require 'PaperScraper'
+  @config = YAML.load_file('config/databases.yml')[ENVIRONMENT]
 end
 
 namespace :db do  
@@ -40,24 +39,13 @@ namespace :scraper do
   
   task :run_scrape => :configuration do
     puts "Scraping began at #{Time.now}..."
-    mail_comment_count = Comment.mail.count
-    guardian_comment_count = Comment.guardian.count
-    case
-    when guardian_comment_count > mail_comment_count + 20 then
-      prescription = PAPERS.select {|paper| paper.name == "Mail"}
-    when mail_comment_count > guardian_comment_count + 20 then
-      prescription = PAPERS.select {|paper| paper.name == "Guardian"}
-    else 
-      prescription = PAPERS
-    end
-    
-    prescription.each(&:scrape_next_unconsumed_article_if_exists)
+    PAPERS.run_scrape
     puts "Scraping complete at #{Time.now}"
   end
   
   task :replenish_article_lists => :configuration do
     puts "Started replenishing article lists at #{Time.now}"
-    PAPERS.select(&:time_to_replenish?).each(&:replenish_article_urls)
+    PAPERS.replenish
   end
   
   desc "Downloads the comments from articles"
