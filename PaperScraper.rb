@@ -92,8 +92,7 @@ class Paper < OpenStruct
   def latest_article_urls
     content = open(articles_rss_url).read
     feed = RSS::Parser.parse(content, false)
-    urls = feed.items.reverse.collect(&:link)
-    urls.take(10)
+    feed.items.reverse.collect(&:link)
   end
 end
 
