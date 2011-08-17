@@ -1,18 +1,15 @@
 #!/usr/bin/env ruby
 
 #PaperScraper.rb
-#My first ruby application
 #A script to harvest comments from the Daily Mail and Guardian websites and write them to a database, keeping the two sources equally represented
-#Version 0.1
 
 require File.join(File.expand_path(File.dirname(__FILE__)), 'config', 'env')
 
-require 'open-uri'
-require 'rss/2.0'
 require 'ostruct'
 
 require 'guardian_scraper'
 require 'mail_scraper'
+require 'feed_parser'
 
 class Comment < ActiveRecord::Base
   MAXIMUM_NUMBER_OF_COMMENTS = 1500
@@ -92,8 +89,9 @@ class Article < ActiveRecord::Base
 end
 
 class Paper < OpenStruct
+  include FeedParser
   def replenish_article_urls
-    candidate_articles = latest_article_urls.map{|url| Article.create(:paper => name, :url => url)}
+    candidate_articles = latest_article_urls_from(articles_rss_url).map{|url| Article.create(:paper => name, :url => url)}
     candidate_articles.select(&:valid?).each(&:save)
   end
   
@@ -104,13 +102,6 @@ class Paper < OpenStruct
   def scrape_next_unconsumed_article_if_exists
     article = Article.where(:consumed => false, :paper => name).first
     article.scrape unless article.nil?
-  end
-  
-  protected
-  def latest_article_urls
-    content = open(articles_rss_url).read
-    feed = RSS::Parser.parse(content, false)
-    feed.items.reverse.collect(&:link)
   end
 end
 
