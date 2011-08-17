@@ -5,15 +5,14 @@
 #A script to harvest comments from the Daily Mail and Guardian websites and write them to a database, keeping the two sources equally represented
 #Version 0.1
 
-require 'config/env'
+require File.join(File.expand_path(File.dirname(__FILE__)), 'config', 'env')
 
 require 'open-uri'
 require 'rss/2.0'
-require 'iconv'
 require 'ostruct'
 
-require 'hpricot'
-require 'mechanize'
+require 'guardian_scraper'
+require 'mail_scraper'
 
 class Comment < ActiveRecord::Base
   MAXIMUM_NUMBER_OF_COMMENTS = 1500
@@ -65,6 +64,31 @@ end
 
 class Article < ActiveRecord::Base
   validates_uniqueness_of :url
+  
+  def scrape
+    self.consumed = true
+    save
+    comments = paper.scraper.download_comments_from(url)
+    if comments.empty?
+      puts "#{name} article has no comments."
+    else
+      persist(comments)
+    end
+  end
+  
+  def paper
+    PAPERS.find_by_name(self[:paper])
+  end
+  
+  protected
+  def persist(plain_text_comments)
+    candidates = plain_text_comments.take(20).map do |comment|
+      Comment.create(:comment => comment, :url => url, :paper => paper.name)
+    end
+    comments = candidates.select(&:valid?)
+    comments.map(&:save)
+    puts "Number of #{paper.name} comments inserted: #{comments.size}"
+  end
 end
 
 class Paper < OpenStruct
@@ -79,11 +103,7 @@ class Paper < OpenStruct
   
   def scrape_next_unconsumed_article_if_exists
     article = Article.where(:consumed => false, :paper => name).first
-    unless article.nil?
-      article.consumed = true
-      article.save
-      scrape(article)
-    end
+    article.scrape unless article.nil?
   end
   
   protected
@@ -92,57 +112,6 @@ class Paper < OpenStruct
     feed = RSS::Parser.parse(content, false)
     feed.items.reverse.collect(&:link)
   end
-  
-  def scrape(article)
-    comments = scraper.download_comments_from(article.url)
-    if comments.empty?
-      puts "#{name} article has no comments."
-    else
-      persist(comments, article)
-    end
-  end
-  
-  def persist(plain_text_comments, article)
-    candidates = plain_text_comments.take(20).map do |comment|
-      Comment.create(:comment => comment, :url => article.url, :paper => self.name)
-    end
-    comments = candidates.select(&:valid?)
-    comments.map(&:save)
-    puts "Number of #{name} comments inserted: #{comments.size}"
-  end
-end
-
-class MailScraper
-  def download_comments_from(article_url)
-    _, article_path, article_id = article_url.match(/www.dailymail.co.uk(\/.*article-(\d+).*)$/).to_a
-    response = Mechanize.new.post(
-      'http://www.dailymail.co.uk/dwr/call/plaincall/AjaxReaderComments.paginateReaderComments.dwr',
-      {'callCount'=>'1',
-      'page'=>"#{article_path}",
-      'httpSessionId'=>'',
-      'scriptSessionId'=>'',
-      'c0-scriptName'=>'AjaxReaderComments',
-      'c0-methodName'=>'paginateReaderComments',
-      'c0-id'=>'0',
-      'c0-param0'=>'string:' + article_id,
-      'c0-param1'=>'number:1',
-      'c0-param2'=>'number:100',
-      'c0-param3'=>'string:newest',
-      'batchId'=>'0' } 
-    )
-    response.body.scan(/yourComments="(.*)"/)
-  end
-end
-
-class GuardianScraper
-  def download_comments_from(article_url)
-    comment_nodes = []
-    scrape = open(article_url) do |f|
-      page_markup = Iconv.conv('utf-8', f.charset, f.read)
-      comment_nodes = Hpricot(page_markup).search("div[@class='comment-body']")
-    end
-    comment_nodes.map(&:inner_text).map(&:strip)
-  end   
 end
 
 class Papers
@@ -159,9 +128,9 @@ class Papers
     guardian_comment_count = Comment.guardian.count
     case
     when guardian_comment_count > mail_comment_count + 20 then
-      prescription = find_by_name("Mail")
+      prescription = [find_by_name("Mail")]
     when mail_comment_count > guardian_comment_count + 20 then
-      prescription = find_by_name("Guardian")
+      prescription = [find_by_name("Guardian")]
     else 
       prescription = @papers
     end
@@ -173,9 +142,8 @@ class Papers
     @papers.select(&:time_to_replenish?).each(&:replenish_article_urls)
   end
   
-  protected
   def find_by_name(name)
-    @papers.select {|paper| paper.name == name}
+    @papers.detect {|paper| paper.name == name}
   end
 end
 
