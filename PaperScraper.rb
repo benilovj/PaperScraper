@@ -11,14 +11,24 @@ require 'guardian_scraper'
 require 'mail_scraper'
 require 'feed_parser'
 
+ActiveRecord::Base.class_eval do
+  def self.validates_absence_of(elements)
+    validates_each :comment do |model, attr, value|
+      elements.each do |element|
+        model.errors.add(attr, "cannot contain '#{element}' as it gives away the source") if value =~ Regexp.new(element, Regexp::IGNORECASE)
+      end
+    end
+  end
+end
+
 class Comment < ActiveRecord::Base
   MAXIMUM_NUMBER_OF_COMMENTS = 1500
   REFERENCES_TO_SOURCE = [" Mail", "Guardian", "====", "Cif", "DM"]
   JUNK = ['This comment was removed by a moderator', 'u00']
   
   validates_presence_of :comment
-  validate :absence_of_references_to_source
-  validate :absence_of_junk
+  validates_absence_of REFERENCES_TO_SOURCE
+  validates_absence_of JUNK
   
   scope :guardian, :joins => :article, :conditions => "articles.paper = 'Guardian'"
   scope :mail, :joins => :article, :conditions => "articles.paper = 'Mail'"
@@ -27,8 +37,7 @@ class Comment < ActiveRecord::Base
   
   class << self 
     def random
-      # TODO: make this random!
-      self.find(:first)
+      self.first(:offset => rand(self.count))
     end
     
     def keep_only_latest_comments
@@ -43,21 +52,6 @@ class Comment < ActiveRecord::Base
   def paper
     self.article.paper
   end
-  
-  protected
-  def absence_of_references_to_source
-    REFERENCES_TO_SOURCE.each do |reference_to_source|
-      errors.add(:comment, "cannot contain reference to source: #{reference_to_source}") if
-            comment =~ Regexp.new(reference_to_source, Regexp::IGNORECASE)
-    end
-  end
-
-  def absence_of_junk
-    JUNK.each do |junk|
-      errors.add(:comment, "cannot contain junk: #{junk}") if
-            comment =~ Regexp.new(junk, Regexp::IGNORECASE)
-    end
-  end
 end
 
 class Article < ActiveRecord::Base
@@ -68,7 +62,7 @@ class Article < ActiveRecord::Base
     self.consumed = true
     comments = paper.scraper.download_comments_from(url)
     if comments.empty?
-      puts "#{name} article has no comments."
+      puts "#{paper.name} article has no comments."
     else
       persist(comments)
     end
