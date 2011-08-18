@@ -76,7 +76,7 @@ class Article < ActiveRecord::Base
   protected
   def persist(plain_text_comments)
     candidates = plain_text_comments.take(20).map do |comment|
-      Comment.new(:comment => comment, :url => url)
+      Comment.new(:comment => comment)
     end
     self.comments = candidates.select(&:valid?)
     puts "Number of #{paper.name} comments inserted: #{comments.size}"
