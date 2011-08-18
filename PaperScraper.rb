@@ -20,15 +20,12 @@ class Comment < ActiveRecord::Base
   validate :absence_of_references_to_source
   validate :absence_of_junk
   
+  scope :guardian, :joins => :article, :conditions => "articles.paper = 'Guardian'"
+  scope :mail, :joins => :article, :conditions => "articles.paper = 'Mail'"
+  
+  belongs_to :article
+  
   class << self 
-    def mail
-      self.where(:paper => 'Mail')
-    end
-    
-    def guardian
-      self.where(:paper => 'Guardian')
-    end
-    
     def random
       # TODO: make this random!
       self.find(:first)
@@ -41,6 +38,10 @@ class Comment < ActiveRecord::Base
     def cutoff_timestamp
       self.find(:all, :order => "created_at desc", :limit => MAXIMUM_NUMBER_OF_COMMENTS).last.created_at
     end
+  end
+  
+  def paper
+    self.article.paper
   end
   
   protected
@@ -61,16 +62,17 @@ end
 
 class Article < ActiveRecord::Base
   validates_uniqueness_of :url
+  has_many :comments, :dependent => :destroy, :autosave => true
   
   def scrape
     self.consumed = true
-    save
     comments = paper.scraper.download_comments_from(url)
     if comments.empty?
       puts "#{name} article has no comments."
     else
       persist(comments)
     end
+    save
   end
   
   def paper
@@ -80,10 +82,9 @@ class Article < ActiveRecord::Base
   protected
   def persist(plain_text_comments)
     candidates = plain_text_comments.take(20).map do |comment|
-      Comment.create(:comment => comment, :url => url, :paper => paper.name)
+      Comment.new(:comment => comment, :url => url)
     end
-    comments = candidates.select(&:valid?)
-    comments.map(&:save)
+    self.comments = candidates.select(&:valid?)
     puts "Number of #{paper.name} comments inserted: #{comments.size}"
   end
 end
