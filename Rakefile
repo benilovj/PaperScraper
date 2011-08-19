@@ -31,10 +31,10 @@ end
 
 namespace :scraper do
   task :cap_number_of_comments => :configuration do
-    puts "Table status: #{Comment.guardian.count} Guardian comments. #{Comment.mail.count} Daily Mail comments."
+    puts PAPERS.status
     puts "Capping the maximum amount of comments..."
     Comment.keep_only_latest_comments
-    puts "Table status: #{Comment.guardian.count} Guardian comments. #{Comment.mail.count} Daily Mail comments."
+    puts PAPERS.status
   end
   
   task :run_scrape => :configuration do

@@ -87,8 +87,7 @@ end
 class Paper < OpenStruct
   include FeedParser
   def replenish_article_urls
-    candidate_articles = latest_article_urls_from(articles_rss_url).map{|url| Article.create(:paper => name, :url => url)}
-    candidate_articles.select(&:valid?).each(&:save)
+    latest_article_urls_from(articles_rss_url).each {|url| Article.create(:paper => name, :url => url)}
   end
   
   def time_to_replenish?
@@ -98,6 +97,10 @@ class Paper < OpenStruct
   def scrape_next_unconsumed_article_if_exists
     article = unconsumed_articles.first
     article.scrape unless article.nil?
+  end
+  
+  def status
+    "#{comment_class.count} #{name} comments."
   end
   
   protected
@@ -136,6 +139,10 @@ class Papers
   
   def find_by_name(name)
     @papers.detect {|paper| paper.name == name}
+  end
+  
+  def status
+    "Table status: " + @papers.map(&:status).join(" ")
   end
 end
 
