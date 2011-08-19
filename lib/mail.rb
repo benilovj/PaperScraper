@@ -21,3 +21,12 @@ class MailScraper
     response.body.scan(/yourComments="(.*)"/)
   end
 end
+
+class MailComment < Comment
+  validates_absence_of [" Mail", "DM"]
+end
+
+PAPERS << Paper.new(:name => 'Mail',
+                    :articles_rss_url => 'http://www.dailymail.co.uk/news/headlines/index.rss',
+                    :scraper => MailScraper.new,
+                    :comment_class => MailComment)

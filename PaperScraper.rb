@@ -3,12 +3,9 @@
 #PaperScraper.rb
 #A script to harvest comments from the Daily Mail and Guardian websites and write them to a database, keeping the two sources equally represented
 
-require File.join(File.expand_path(File.dirname(__FILE__)), 'config', 'env')
-
 require 'ostruct'
 
-require 'guardian_scraper'
-require 'mail_scraper'
+require File.join(File.expand_path(File.dirname(__FILE__)), 'config', 'env')
 require 'feed_parser'
 
 ActiveRecord::Base.class_eval do
@@ -45,14 +42,6 @@ class Comment < ActiveRecord::Base
   def paper
     self.article.paper
   end
-end
-
-class GuardianComment < Comment
-  validates_absence_of ["Guardian", "====", "Cif", 'This comment was removed by a moderator']
-end
-
-class MailComment < Comment
-  validates_absence_of [" Mail", "DM"]
 end
 
 class Article < ActiveRecord::Base
@@ -100,7 +89,11 @@ class Paper < OpenStruct
   end
   
   def status
-    "#{comment_class.count} #{name} comments."
+    "#{comment_count} #{name} comments."
+  end
+  
+  def comment_count
+    comment_class.count
   end
   
   protected
@@ -119,18 +112,11 @@ class Papers
   end
   
   def run_scrape
-    mail_comment_count = MailComment.count
-    guardian_comment_count = GuardianComment.count
-    case
-    when guardian_comment_count > mail_comment_count + 20 then
-      prescription = [find_by_name("Mail")]
-    when mail_comment_count > guardian_comment_count + 20 then
-      prescription = [find_by_name("Guardian")]
-    else 
-      prescription = @papers
-    end
+    max = max_comment_count_for_a_paper
+    papers_to_scrape = @papers.select {|paper| paper.comment_count < max - 20}
+    papers_to_scrape = @papers if papers_to_scrape.empty?
     
-    prescription.each(&:scrape_next_unconsumed_article_if_exists)
+    papers_to_scrape.each(&:scrape_next_unconsumed_article_if_exists)
   end
   
   def replenish
@@ -144,14 +130,14 @@ class Papers
   def status
     "Table status: " + @papers.map(&:status).join(" ")
   end
+  
+  protected
+  def max_comment_count_for_a_paper
+    @papers.collect(&:comment_count).max
+  end
 end
 
 PAPERS = Papers.new
-PAPERS << Paper.new(:name => 'Mail',
-                    :articles_rss_url => 'http://www.dailymail.co.uk/news/headlines/index.rss',
-                    :scraper => MailScraper.new,
-                    :comment_class => MailComment)
-PAPERS << Paper.new(:name => 'Guardian',
-                    :articles_rss_url => 'http://feeds.guardian.co.uk/theguardian/commentisfree/rss',
-                    :scraper => GuardianScraper.new,
-                    :comment_class => GuardianComment)
+
+require 'guardian'
+require 'mail'
