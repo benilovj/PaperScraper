@@ -23,20 +23,13 @@ end
 
 class Comment < ActiveRecord::Base
   MAXIMUM_NUMBER_OF_COMMENTS = 1500
-  REFERENCES_TO_SOURCE = [" Mail", "Guardian", "====", "Cif", "DM"]
-  JUNK = ['This comment was removed by a moderator', 'u00']
   
   validates_presence_of :comment
-  validates_absence_of REFERENCES_TO_SOURCE
-  validates_absence_of JUNK
-  
-  scope :guardian, :joins => :article, :conditions => "articles.paper = 'Guardian'"
-  scope :mail, :joins => :article, :conditions => "articles.paper = 'Mail'"
-  
   belongs_to :article
   
   class << self 
     def random
+      return nil if self.count == 0
       self.first(:offset => rand(self.count))
     end
     
@@ -52,6 +45,14 @@ class Comment < ActiveRecord::Base
   def paper
     self.article.paper
   end
+end
+
+class GuardianComment < Comment
+  validates_absence_of ["Guardian", "====", "Cif", 'This comment was removed by a moderator']
+end
+
+class MailComment < Comment
+  validates_absence_of [" Mail", "DM"]
 end
 
 class Article < ActiveRecord::Base
@@ -76,7 +77,7 @@ class Article < ActiveRecord::Base
   protected
   def persist(plain_text_comments)
     candidates = plain_text_comments.take(20).map do |comment|
-      Comment.new(:comment => comment)
+      paper.comment_class.new(:comment => comment)
     end
     self.comments = candidates.select(&:valid?)
     puts "Number of #{paper.name} comments inserted: #{comments.size}"
@@ -91,12 +92,17 @@ class Paper < OpenStruct
   end
   
   def time_to_replenish?
-    Article.where(:paper => name).count < 30
+    unconsumed_articles.count < 30
   end
   
   def scrape_next_unconsumed_article_if_exists
-    article = Article.where(:consumed => false, :paper => name).first
+    article = unconsumed_articles.first
     article.scrape unless article.nil?
+  end
+  
+  protected
+  def unconsumed_articles
+    Article.where(:consumed => false, :paper => name)
   end
 end
 
@@ -110,8 +116,8 @@ class Papers
   end
   
   def run_scrape
-    mail_comment_count = Comment.mail.count
-    guardian_comment_count = Comment.guardian.count
+    mail_comment_count = MailComment.count
+    guardian_comment_count = GuardianComment.count
     case
     when guardian_comment_count > mail_comment_count + 20 then
       prescription = [find_by_name("Mail")]
@@ -136,7 +142,9 @@ end
 PAPERS = Papers.new
 PAPERS << Paper.new(:name => 'Mail',
                     :articles_rss_url => 'http://www.dailymail.co.uk/news/headlines/index.rss',
-                    :scraper => MailScraper.new)
+                    :scraper => MailScraper.new,
+                    :comment_class => GuardianComment)
 PAPERS << Paper.new(:name => 'Guardian',
                     :articles_rss_url => 'http://feeds.guardian.co.uk/theguardian/commentisfree/rss',
-                    :scraper => GuardianScraper.new)
+                    :scraper => GuardianScraper.new,
+                    :comment_class => MailComment)
