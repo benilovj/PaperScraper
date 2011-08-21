@@ -17,8 +17,13 @@ class Question
 end
 
 class Game
-  def initialize
+  def initialize(*papers)
+    @papers = papers
     @questions = []
+  end
+  
+  def choice_names
+    @papers.map(&:name)
   end
   
   def finished?
@@ -29,8 +34,8 @@ class Game
     current_question.answer = guess
   end
   
-  def valid_choice?(choice)
-    ["guardian", "mail"].include?(choice.downcase)
+  def valid_choice?(paper)
+    @papers.include?(paper)
   end
   
   def current_question
@@ -40,6 +45,10 @@ class Game
   
   protected
   def fetch_new_comment
-    @questions << Question.new(@questions.size + 1, Comment.random)
+    @questions << Question.new(@questions.size + 1, randomly_chosen_paper.random_comment)
+  end
+  
+  def randomly_chosen_paper
+    @papers.sample
   end
 end

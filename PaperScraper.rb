@@ -60,7 +60,7 @@ class Article < ActiveRecord::Base
   end
   
   def paper
-    PAPERS.find_by_name(self[:paper])
+    PAPERS[self[:paper]]
   end
   
   protected
@@ -96,6 +96,18 @@ class Paper < OpenStruct
     comment_class.count
   end
   
+  def comment_class
+    Kernel.const_get(comment_class_name.to_sym)
+  end
+  
+  def ==(other)
+    self.name == other.name
+  end
+  
+  def random_comment
+    comment_class.random
+  end
+  
   protected
   def unconsumed_articles
     Article.where(:consumed => false, :paper => name)
@@ -123,7 +135,7 @@ class Papers
     @papers.select(&:time_to_replenish?).each(&:replenish_article_urls)
   end
   
-  def find_by_name(name)
+  def [](name)
     @papers.detect {|paper| paper.name == name}
   end
   

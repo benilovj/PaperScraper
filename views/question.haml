@@ -7,9 +7,9 @@
       %p= @game.current_question.comment_text
   
     #wflf-selection-buttons
-      %form.paper-form{ :name => "input", :action => "/game/answer/mail", :method => "post" }
+      %form.paper-form{ :name => "input", :action => "/game/answer/" + URI.escape(@game.choice_names[0]), :method => "post" }
         .left_choice
-          %input{ :type => "submit", :name => "mail", :value => "Mail" }
-      %form.paper-form{ :name => "input", :action => "/game/answer/guardian", :method => "post" }
+          %input{ :type => "submit", :name => "left-choice", :value => @game.choice_names[0] }
+      %form.paper-form{ :name => "input", :action => "/game/answer/" + URI.escape(@game.choice_names[1]), :method => "post" }
         .right_choice
-          %input{ :type => "submit", :name => "guardian", :value => "Guardian" }
+          %input{ :type => "submit", :name => "right-choice", :value => @game.choice_names[1] }

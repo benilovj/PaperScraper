@@ -20,18 +20,39 @@ describe Question do
 end
 
 describe Game do
-  context "initially" do
-    let(:game) {Game.new}
+  before(:each) do
+    @papers = {:guardian => mock(Paper,
+                                :name => "Guardian",
+                                :random_comment => mock(Comment, :comment => "Comment from DB")),
+               :mail     => mock(Paper,
+                                :name => "Daily Mail",
+                                :random_comment => mock(Comment, :comment => "Comment from DB"))}
+  end
 
-    it { should_not be_finished }
+  def game_with_mail_and_guardian
+    Game.new(@papers[:guardian], @papers[:mail])
+  end
+
+  def mail; @papers[:mail]; end
+  def guardian; @papers[:guardian]; end
+  
+  context "initially" do
+    let(:game) {game_with_mail_and_guardian}
+
+    it { game.should_not be_finished }
+
+    it "should provide the names of the choices" do
+      game.choice_names.should == ["Guardian", "Daily Mail"]
+    end
 
     it "should fetch the text of the first comment" do
-      Comment.should_receive(:random).and_return(mock(Comment, :comment => "Comment from DB"))
       game.current_question.comment_text.should == "Comment from DB"
     end
 
     it "should hit the DB exactly once per comment" do
-      Comment.should_receive(:random).exactly(:once).and_return(mock(Comment, :comment => "Comment from DB"))
+      a_paper = mock(Paper, :name => "Mail")
+      game = Game.new(a_paper, a_paper)
+      a_paper.should_receive(:random_comment).exactly(:once).and_return(mock(Comment, :comment => "Comment from DB"))
       2.times { game.current_question.comment_text.should == "Comment from DB"}
     end
 
@@ -40,19 +61,17 @@ describe Game do
     end
     
     it "should provide the list of possible answers" do
-      game.should be_a_valid_choice("guardian")
-      game.should be_a_valid_choice("Guardian")
-      game.should be_a_valid_choice("Mail")
-      game.should be_a_valid_choice("mail")
+      game.should be_a_valid_choice(guardian)
+      game.should be_a_valid_choice(mail)
 
-      game.should_not be_a_valid_choice("independent")
+      game.should_not be_a_valid_choice(mock(Paper, :name => "Independent"))
     end
   end
 
   context "after one answer" do
     before do
-      @game = Game.new
-      @game.answer = "Mail"
+      @game = game_with_mail_and_guardian
+      @game.answer = "Daily Mail"
     end
 
     it "should be on the second comment" do
@@ -62,7 +81,7 @@ describe Game do
 
   context "after 10 questions and 9 answers" do
     before do
-      @game = Game.new
+      @game = game_with_mail_and_guardian
       Comment.stub!(:random).times.and_return(mock(Comment, :comment => "Comment from DB"))
       
       9.times { @game.answer = "Guardian" }
@@ -74,8 +93,7 @@ describe Game do
 
   context "after 10 answers" do
     before do
-      @game = Game.new
-      Comment.should_receive(:random).exactly(10).times.and_return(mock(Comment, :comment => "Comment from DB"))
+      @game = game_with_mail_and_guardian
 
       10.times { @game.answer = "Guardian" }
     end

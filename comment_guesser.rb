@@ -5,6 +5,7 @@ require 'sinatra'
 require 'yaml'
 require 'haml'
 require 'sass'
+require 'uri'
 
 $: << File.expand_path(File.dirname(__FILE__))
 require 'lib/game'
@@ -27,12 +28,16 @@ end
   end
 end
 
+def new_game
+  Game.new(PAPERS["Daily Mail"], PAPERS["Guardian"])
+end
+
 before /game/ do
-  @game = session[:game] ? YAML.load(session[:game]) : Game.new
+  @game = session[:game] ? YAML.load(session[:game]) : new_game
 end
 
 post '/game/new' do
-  @game = Game.new
+  @game = new_game
   redirect to('/game')
 end
 
@@ -44,8 +49,9 @@ get '/game' do
   end
 end
 
-post '/game/answer/:paper' do |paper|
-  pass unless @game.valid_choice?(paper)
+post '/game/answer/:paper_name' do |paper_name|
+  paper = PAPERS[URI.unescape(paper_name)]
+  pass if paper.nil? or not @game.valid_choice?(paper)
   @game.answer = paper
   redirect to('/game')
 end

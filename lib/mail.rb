@@ -26,7 +26,7 @@ class MailComment < Comment
   validates_absence_of [" Mail", "DM"]
 end
 
-PAPERS << Paper.new(:name => 'Mail',
+PAPERS << Paper.new(:name => 'Daily Mail',
                     :articles_rss_url => 'http://www.dailymail.co.uk/news/headlines/index.rss',
                     :scraper => MailScraper.new,
-                    :comment_class => MailComment)
+                    :comment_class_name => "MailComment")

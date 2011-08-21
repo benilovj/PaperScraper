@@ -20,4 +20,4 @@ end
 PAPERS << Paper.new(:name => 'Guardian',
                     :articles_rss_url => 'http://feeds.guardian.co.uk/theguardian/commentisfree/rss',
                     :scraper => GuardianScraper.new,
-                    :comment_class => GuardianComment)
+                    :comment_class_name => "GuardianComment")
