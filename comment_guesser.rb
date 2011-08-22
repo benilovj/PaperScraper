@@ -36,6 +36,10 @@ before /game/ do
   @game = session[:game] ? YAML.load(session[:game]) : new_game
 end
 
+get '/game/new' do
+  redirect to('/')
+end
+
 post '/game/new' do
   @game = new_game
   redirect to('/game')

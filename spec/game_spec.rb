@@ -21,12 +21,10 @@ end
 
 describe Game do
   before(:each) do
-    @papers = {:guardian => mock(Paper,
-                                :name => "Guardian",
-                                :random_comment => mock(Comment, :comment => "Comment from DB")),
-               :mail     => mock(Paper,
-                                :name => "Daily Mail",
-                                :random_comment => mock(Comment, :comment => "Comment from DB"))}
+    @papers = {:guardian => mock(Paper, :name => "Guardian"),
+               :mail     => mock(Paper, :name => "Daily Mail")}
+    @comment_source = mock(RandomCommentSource, :new_comment => mock(Comment, :comment => "Comment from DB"))
+    RandomCommentSource.stub!(:new).and_return(@comment_source)
   end
 
   def game_with_mail_and_guardian
@@ -52,7 +50,7 @@ describe Game do
     it "should hit the DB exactly once per comment" do
       a_paper = mock(Paper, :name => "Mail")
       game = Game.new(a_paper, a_paper)
-      a_paper.should_receive(:random_comment).exactly(:once).and_return(mock(Comment, :comment => "Comment from DB"))
+      @comment_source.should_receive(:new_comment).exactly(:once).and_return(mock(Comment, :comment => "Comment from DB"))
       2.times { game.current_question.comment_text.should == "Comment from DB"}
     end
 
@@ -82,7 +80,6 @@ describe Game do
   context "after 10 questions and 9 answers" do
     before do
       @game = game_with_mail_and_guardian
-      Comment.stub!(:random).times.and_return(mock(Comment, :comment => "Comment from DB"))
       
       9.times { @game.answer = "Guardian" }
       @game.current_question.comment_text

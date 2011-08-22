@@ -16,9 +16,25 @@ class Question
   end
 end
 
+class RandomCommentSource
+  def initialize(papers)
+    @papers = papers
+  end
+  
+  def new_comment
+    randomly_chosen_paper.random_comment
+  end
+  
+  protected
+  def randomly_chosen_paper
+    @papers.sample
+  end
+end
+
 class Game
   def initialize(*papers)
     @papers = papers
+    @comment_source = RandomCommentSource.new(papers)
     @questions = []
   end
   
@@ -45,10 +61,6 @@ class Game
   
   protected
   def fetch_new_comment
-    @questions << Question.new(@questions.size + 1, randomly_chosen_paper.random_comment)
-  end
-  
-  def randomly_chosen_paper
-    @papers.sample
+    @questions << Question.new(@questions.size + 1, @comment_source.new_comment)
   end
 end
