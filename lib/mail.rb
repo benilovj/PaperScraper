@@ -18,7 +18,12 @@ class MailScraper
       'c0-param3'=>'string:newest',
       'batchId'=>'0' } 
     )
-    response.body.scan(/yourComments="(.*)"/)
+    response.body.scan(/yourComments="(.*)"/).flatten.map{|text| postprocess(text)}
+  end
+  
+  protected
+  def postprocess(text)
+    text.gsub("\\\\", "\\").gsub("\\'", "'")
   end
 end
 
