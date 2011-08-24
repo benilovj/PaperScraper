@@ -1,37 +1,31 @@
-$(document).ready(function() { 
+$(document).ready(function() {
+    $('#response').hide();
 
-	$('#response').hide();
+    $("#left-form").submit(function(event) {
+		event.preventDefault(); 
+        $.ajax({
+            type: "POST",
+            url: "/game/answer/Daily%20Mail",
+            success: function(html) { 
+                $("#response").append(html); }
+        });
+        $('#response').show();
+        hideButtons();
+	})
+	
+    $("#right-form").submit(function(event) {
+		event.preventDefault(); 
+        $.ajax({
+            type: "POST",
+            url: "/game/answer/Guardian",
+            success: function(html) { 
+                $("#response").append(html); }
+        });
+        $('#response').show();
+        hideButtons();
+	})
 
-	$("input#guardian").click(function() {
-		$.ajax({
-			type: "POST",
-			url: "paper_checker.php?",
-			data: "mail=&guardian=guardian",
-			success: function(html) { 
-				$("#response").append(html); }
-		});
-		$('#response').show();
-		hideButtons();
-		return false;
-	});
-
-	$("input#mail").click(function() {
-		$.ajax({
-			type: "POST",
-			url: "paper_checker.php?",
-			data: "mail=mail&guardian=",
-			success: function(html) { 
-				$("#response").append(html); }
-		});
-		$('#response').show();
-		hideButtons();
-		return false;
-	});
-
-function hideButtons() {
-	$("#wflf-selection-buttons").hide();
-}
-
+	function hideButtons() {
+	    $("#wflf-selection-buttons").hide();
+	}
 });
-
-

@@ -29,4 +29,5 @@ end
 PAPERS << Paper.new(:name => 'Daily Mail',
                     :articles_rss_url => 'http://www.dailymail.co.uk/news/headlines/index.rss',
                     :scraper => MailScraper.new,
-                    :comment_class_name => "MailComment")
+                    :comment_class_name => "MailComment",
+                    :logo => "/images/mail.gif")

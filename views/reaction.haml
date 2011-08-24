@@ -1,0 +1,14 @@
+#response
+  #answer-report
+    %p.systemfont.result= @game.reaction.exclamation
+    %br/
+    %img{:alt => "It was from the #{@game.reaction.correct_paper_name}", :src => @game.reaction.correct_paper_logo}/
+    %br/
+  .centretext
+    %p.systemfont People tend to guess the correct source for this comment.
+  #wflf-question-controls
+    %br/
+    %p.centretext
+      %a.systemfont.buttonlike{:href => "/game"}= @game.finished? ? "See you scores!" : "Next Question"
+      %br/
+      %a.systemfont.modestlink{:href => @game.reaction.source_article_url, :target => "_blank"} See the original article
