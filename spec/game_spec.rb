@@ -37,6 +37,10 @@ describe QuizQuestion do
     it "should provoke a positive reaction" do
       @qn.reaction.should be_a(PositiveReaction)
     end
+    
+    it "should contribute to the score" do
+      @qn.score.should == 1
+    end
   end
   
   context "incorrectly answered" do
@@ -47,6 +51,10 @@ describe QuizQuestion do
     
     it "should provoke a negative reaction" do
       @qn.reaction.should be_a(NegativeReaction)
+    end
+    
+    it "should not contribute to the score" do
+      @qn.score.should == 0
     end
   end
 end
@@ -177,14 +185,14 @@ end
     end
   end
 
-  context "after 10 answers" do
+  context "after 10 incorrect answers" do
     before do
       @game = game_with_mail_and_guardian
-
       10.times { @game.answer = "Guardian" }
     end
 
     specify { @game.should be_finished }
+    specify { @game.score.should == 0 }
   end
   
   # {"papers" => ["Daily Mail", "Guardian"], "questions_and_answers" => [[3, "Guardian"], [2, "Daily Mail"], [5, nil]]}

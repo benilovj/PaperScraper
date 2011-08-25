@@ -1,12 +1,14 @@
-#wflf-scorebox
-  /%p.systemfont You scored
-  /%span.wflf-hugenum $_SESSION['score']
-  %br
+#main
+  #wflf-content-box
+    #wflf-scorebox
+      %p.systemfont You scored
+      %span.wflf-hugenum= @game.score
+      %br/
    
-.centretext
-  /%a.systemfont.final.buttonlike-tweetcolours{:href => "http://twitter.com/home?status=I scored a respectable #{session['score']} /10 on the Mail/Guardian game at http://wiflufu.com/mail-or-guardian #mailorguardian"} Tweet your score!
+    .centretext
+      %a.systemfont.final.buttonlike-tweetcolours{:href => "http://twitter.com/home?status=I scored a respectable #{@game.score}/10 on the Mail/Guardian game at http://wiflufu.com/mail-or-guardian #mailorguardian"} Tweet your score!
 
-.centretext
-  %form{:name => "input", :action => "/game/new", :method => "post" }
-    %input.systemfont.buttonlike{ :type => "submit", :name => "submit", :value => "Play again" }
+    .centretext
+      %form{:name => "input", :action => "/game/new", :method => "post" }
+        %input.systemfont.buttonlike{ :type => "submit", :name => "submit", :value => "Play again" }
   

@@ -23,6 +23,10 @@ class QuizQuestion
     [@comment.id, answered? ? @answer.name : nil]
   end
   
+  def score
+    answer_correct? ? 1 : 0
+  end
+  
   protected
   def answer_correct?
     @comment.paper == @answer
@@ -114,6 +118,10 @@ class Game
   
   def dump
     {:papers => choice_names, :questions => @questions.collect(&:dump)}
+  end
+
+  def score
+    @questions.map(&:score).inject(:+)
   end
 
   class << self
