@@ -2,12 +2,10 @@ require 'bundler/setup'
 
 $: << File.expand_path(File.dirname(__FILE__))
 
-require 'rspec/core/rake_task'
-
 task :configuration do
   require 'yaml'
   require 'PaperScraper'
-  @config = YAML.load_file('config/databases.yml')[ENVIRONMENT]
+  @config = YAML.load_file('config/databases.yml')[RAILS_ENV]
 end
 
 namespace :db do  
@@ -21,12 +19,6 @@ namespace :db do
     ActiveRecord::Migration.verbose = true
     ActiveRecord::Migrator.migrate 'db/migrate', ENV['VERSION'] ? ENV['VERSION'].to_i : nil
   end
-end
-
-desc "Run all examples"
-RSpec::Core::RakeTask.new(:spec) do |t|
-  t.rspec_opts = %w[--color]
-  t.verbose = false
 end
 
 namespace :scraper do
@@ -53,4 +45,14 @@ namespace :scraper do
 
   desc "Updates the list of articles"
   task :maintain => [:replenish_article_lists, :cap_number_of_comments]
+end
+
+unless ENV['RAILS_ENV'] == 'production'
+  require 'rspec/core/rake_task'
+  
+  desc "Run all examples"
+  RSpec::Core::RakeTask.new(:spec) do |t|
+    t.rspec_opts = %w[--color]
+    t.verbose = false
+  end
 end

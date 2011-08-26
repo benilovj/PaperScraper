@@ -7,7 +7,7 @@ gem 'sinatra'
 gem 'haml'
 gem 'sass'
 gem 'sqlite3'
-gem 'rake'
+gem 'rake', '0.9.1'
 gem 'rack', '1.2.1'
 
 group :test do

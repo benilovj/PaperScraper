@@ -2,6 +2,10 @@ require "bundler/capistrano"
 
 default_run_options[:pty] = true
 
+set :default_environment, {
+  'PATH' => "$HOME/.gems/bin:$PATH"
+}
+
 # be sure to change these
 set :user, 'ricm'
 set :domain, 'mailorguardian.ricm.com'
