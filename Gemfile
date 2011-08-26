@@ -8,6 +8,7 @@ gem 'haml'
 gem 'sass'
 gem 'sqlite3'
 gem 'rake'
+gem 'rack', '1.2.1'
 
 group :test do
   gem 'rspec'
