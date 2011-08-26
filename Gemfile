@@ -7,7 +7,12 @@ gem 'sinatra'
 gem 'haml'
 gem 'sass'
 gem 'sqlite3'
+gem 'rake'
 
 group :test do
   gem 'rspec'
+end
+
+group :development do
+  gem 'capistrano'
 end
