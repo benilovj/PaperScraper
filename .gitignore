@@ -1,3 +1,7 @@
 log
 *.sqlite
 .sass-cache
+.bundle/
+REVISION
+public/system
+tmp/
