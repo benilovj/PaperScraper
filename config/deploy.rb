@@ -6,12 +6,10 @@ set :default_environment, {
   'PATH' => "$HOME/.gems/bin:$PATH"
 }
 
-# be sure to change these
 set :user, 'ricm'
 set :domain, 'mailorguardian.ricm.com'
 set :application, 'mailorguardian'
 
-# the rest should be good
 set :repository,  "git@github.com:benilovj/PaperScraper.git"
 set :deploy_to, "/home/#{user}/#{domain}"
 set :deploy_via, :remote_cache
@@ -28,12 +26,18 @@ namespace :deploy do
   task :restart do
     run "touch #{current_path}/tmp/restart.txt"
   end
+  
+  desc "Create a symlink from the production SQLite DB to the current release"
+  task :setup_db do
+    run "ln -s #{shared_path}/db/papers.sqlite #{release_path}/papers.sqlite"
+  end  
 end
 
 namespace :rake do  
-  desc "Run a task on a remote server: cap staging rake:invoke task=a_certain_task"  
-  # run like: cap staging rake:invoke task=a_certain_task  
+  desc "Run a task on a remote server: cap rake:invoke task=a_certain_task"  
   task :invoke do  
-    run("cd #{deploy_to}/current; bundle exec rake #{ENV['task']} RAILS_ENV=#{rails_env}")  
+    run "cd #{deploy_to}/current; bundle exec rake #{ENV['task']} RAILS_ENV=#{rails_env}"
   end  
 end
+
+after "deploy:setup_db", "deploy:migrate"
