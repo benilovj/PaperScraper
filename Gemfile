@@ -17,3 +17,7 @@ end
 group :development do
   gem 'capistrano'
 end
+
+group :production do
+  gem 'newrelic_rpm'
+end
