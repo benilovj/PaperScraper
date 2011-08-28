@@ -39,4 +39,4 @@ namespace :deploy do
   end
 end
 
-after "deploy:setup_db", "deploy:migrate"
+after :deploy, "deploy:setup_db", "deploy:migrate"
