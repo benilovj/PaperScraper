@@ -73,6 +73,30 @@ class Article < ActiveRecord::Base
   end
 end
 
+class GameResult < ActiveRecord::Base
+  set_primary_key :comment_id
+  belongs_to :comment
+  
+  class << self
+    def correctly_guessed(comment)
+      record = record_for(comment)
+      record.correct_guess_count += 1
+      record.save
+    end
+    
+    def wrongly_guessed(comment)
+      record = record_for(comment)
+      record.wrong_guess_count += 1
+      record.save
+    end
+    
+    protected
+    def record_for(comment)
+      find_by_comment_id(comment.id) || create(:comment => comment, :wrong_guess_count => 0, :correct_guess_count => 0)
+    end
+  end
+end
+
 class Paper < OpenStruct
   include FeedParser
   def replenish_article_urls
@@ -141,6 +165,10 @@ class Papers
   
   def status
     "Table status: " + @papers.map(&:status).join(" ")
+  end
+  
+  def with_names(names)
+    @papers.select {|paper| names.include?(paper.name)}
   end
   
   protected

@@ -1,10 +1,10 @@
 class QuizQuestion
-  attr_writer :answer
   attr_reader :number
   
-  def initialize(number, comment)
+  def initialize(number, comment, answer = nil)
     @comment = comment
     @number = number
+    @answer = answer
   end
   
   def answered?
@@ -25,6 +25,15 @@ class QuizQuestion
   
   def score
     answer_correct? ? 1 : 0
+  end
+  
+	def answer=(answer)
+    @answer = answer
+    if answer_correct?
+      GameResult.correctly_guessed(@comment)
+    else
+      GameResult.wrongly_guessed(@comment)
+    end
   end
   
   protected
@@ -85,6 +94,49 @@ class RandomCommentSource
   end
 end
 
+class GameBuilder
+  def initialize
+    @questions = []
+  end
+  
+  def with_papers_named(paper_names)
+    @paper_names = paper_names
+    self
+  end
+  
+  def with_question(comment_id, answer)
+    @questions << [comment_id, answer]
+    self
+  end
+  
+  def build
+    papers = PAPERS.with_names(@paper_names)
+    qns = build_questions
+    Game.new(papers, qns)
+  end
+  
+  protected
+  def build_questions
+    question_ids.each_with_index.map {|comment_id, i| QuizQuestion.new(i + 1, comment_with(comment_id), answer_to_qn(i))}
+  end
+  
+  def comment_with(comment_id)
+    comments_from_db.detect {|c| c.id == comment_id}
+  end
+  
+  def comments_from_db
+    @comments_from_db ||= Comment.find(:all, :conditions => "id in (#{question_ids.join(", ")})")
+  end
+  
+  def question_ids
+    @questions.map(&:first)
+  end
+  
+  def answer_to_qn(index)
+    PAPERS[@questions[index].last]
+  end
+end
+
 class Game
   def initialize(papers, questions = [])
     @papers = papers
@@ -126,13 +178,10 @@ class Game
 
   class << self
     def load(dumped_form)
-      papers = dumped_form[:papers].collect {|paper_name| PAPERS[paper_name]}
-      question_ids = dumped_form[:questions].collect(&:first)
-      comments_from_db = Comment.find(:all, :conditions => "id in (#{question_ids.join(", ")})")
-      qns = question_ids.each_with_index.map {|qn_id, i| QuizQuestion.new(i + 1, comments_from_db.detect {|c| c.id == qn_id})}
-      qns.zip(dumped_form[:questions].collect(&:last)).each {|qn, answer_name| qn.answer = PAPERS[answer_name] }
-      new(papers, qns)
-    end
+      builder = GameBuilder.new.with_papers_named(dumped_form[:papers])
+      dumped_form[:questions].each {|comment_id, answer| builder.with_question(comment_id, answer)}
+      builder.build
+    end    
   end
   
   protected

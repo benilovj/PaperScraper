@@ -1,13 +1,36 @@
 require 'spec_helper'
 require 'game'
 
+module GameHelpers
+  def papers
+    @papers ||= {:guardian => mock(Paper, :name => "Guardian"),
+                 :mail     => mock(Paper, :name => "Daily Mail")}
+  end
+  
+  def game_with_mail_and_guardian
+    Game.new([guardian, mail])
+  end
+
+  def mail; papers[:mail]; end
+  def guardian; papers[:guardian]; end
+  
+  def mail_comment
+    mock(Comment, :comment => "Comment from DB", :paper => mail, :id => 123)
+  end
+end
+
 describe QuizQuestion do
+  include GameHelpers
+  
   context "unanswered" do
     specify { QuizQuestion.new(1, nil).should_not be_answered }
+    before do
+      GameResult.stub!(:correctly_guessed)
+    end
 
     it "should be completed as soon as it gets an answer" do
-      question = QuizQuestion.new(1, nil)
-      question.answer = "some answer"
+      question = QuizQuestion.new(1, mail_comment)
+      question.answer = mail
       question.should be_answered
     end
 
@@ -20,17 +43,18 @@ describe QuizQuestion do
     end
     
     it "should serialize" do
-      qn = QuizQuestion.new(1, mock(Comment, :id => 123))
+      qn = QuizQuestion.new(1, mail_comment)
       qn.dump.should == [123, nil]
-      qn.answer = mock(Paper, :name => "Guardian")
-      qn.dump.should == [123, "Guardian"]
+      qn.answer = mail
+      qn.dump.should == [123, "Daily Mail"]
     end
   end
   
   context "correctly answered" do
     def paper; @paper ||= mock(Paper); end    
     before do
-      @qn = QuizQuestion.new(1, mock(Comment, :paper => paper))
+      @qn = QuizQuestion.new(1, comment = mock(Comment, :paper => paper))
+      GameResult.should_receive(:correctly_guessed).with(comment)
       @qn.answer = paper
     end
     
@@ -45,7 +69,8 @@ describe QuizQuestion do
   
   context "incorrectly answered" do
     before do
-      @qn = QuizQuestion.new(1, mock(Comment, :paper => mock("a paper")))
+      @qn = QuizQuestion.new(1, comment = mock(Comment, :paper => mock("a paper")))
+      GameResult.should_receive(:wrongly_guessed).with(comment)
       @qn.answer = mock("another paper")
     end
     
@@ -56,6 +81,13 @@ describe QuizQuestion do
     it "should not contribute to the score" do
       @qn.score.should == 0
     end
+  end
+  
+  context "instantiated with an answer" do
+    subject { QuizQuestion.new(1, mail_comment, mail) }
+    
+    it { should be_answered }
+    specify { subject.reaction.should be_a(PositiveReaction) }
   end
 end
 
@@ -104,21 +136,13 @@ describe NegativeReaction do
 end
 
 describe Game do
+  include GameHelpers
   before(:each) do
-    @papers = {:guardian => mock(Paper, :name => "Guardian"),
-               :mail     => mock(Paper, :name => "Daily Mail")}
-    @comment_source = mock(RandomCommentSource, :new_comment => mock(Comment, :comment => "Comment from DB",
-                                                                              :paper   => @papers[:mail],
-                                                                              :id      => 123))
+    GameResult.stub!(:correctly_guessed)
+    GameResult.stub!(:wrongly_guessed)
+    @comment_source = mock(RandomCommentSource, :new_comment => mail_comment)
     RandomCommentSource.stub!(:new).and_return(@comment_source)
   end
-
-  def game_with_mail_and_guardian
-    Game.new([@papers[:guardian], @papers[:mail]])
-  end
-
-  def mail; @papers[:mail]; end
-  def guardian; @papers[:guardian]; end
   
   context "initially" do
     let(:game) {game_with_mail_and_guardian}
@@ -167,12 +191,11 @@ describe Game do
       @game.dump.should == {:papers => ["Guardian", "Daily Mail"],
                             :questions => [[123, "Daily Mail"]]}
     end
-end
+  end
 
   context "after 10 questions and 9 answers" do
     before do
       @game = game_with_mail_and_guardian
-      
       9.times { @game.answer = guardian }
       @game.current_question.comment_text
     end
@@ -180,7 +203,9 @@ end
     specify { @game.should_not be_finished }
     it "should reconstitute a dumped game" do
       search_condition = 'id in (%s)' % ([123]*10).join(", ")
-      Comment.should_receive(:find).with(:all, :conditions => search_condition).and_return([mock(Comment, :id => 123)])
+      Comment.should_receive(:find).with(:all, :conditions => search_condition).and_return([mock(Comment, :id => 123,
+                                                                                                          :name => "Guardian",
+                                                                                                          :paper => PAPERS[:guardian])])
       Game.load(@game.dump).dump.should == @game.dump
     end
   end
@@ -188,12 +213,10 @@ end
   context "after 10 incorrect answers" do
     before do
       @game = game_with_mail_and_guardian
-      10.times { @game.answer = "Guardian" }
+      10.times { @game.answer = guardian }
     end
 
     specify { @game.should be_finished }
-    specify { @game.score.should == 0 }
+    specify { @game.score.should == 0}}
   end
-  
-  # {"papers" => ["Daily Mail", "Guardian"], "questions_and_answers" => [[3, "Guardian"], [2, "Daily Mail"], [5, nil]]}
 end

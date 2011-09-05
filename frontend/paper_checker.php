@@ -54,7 +54,7 @@ switch ($_SESSION['answer']) {
 
 ?> </div> 
 <div class="centretext"><p class="systemfont"><?php
-display_trends(get_trends()); ?> </p></div><?php
+display_trends(); ?> </p></div><?php
 flag_if_deceptive($id);	
 echo "<div id='wflf-question-controls'>";
 
@@ -101,30 +101,11 @@ function increase_question_counter() {
 		$_SESSION['question'] = $_SESSION['question'] + 1; }
 }
 
-function display_trends($proportion) {
+function display_trends() {
+  $proportion = $_SESSION['correct'] - $_SESSION['wrong'];
 	if ($proportion <= -2) { echo "People tend to guess the wrong source for this comment."; }
 	elseif ($proportion >= 2) {echo "People tend to guess this comment correctly."; }
 	elseif ($proportion == 0) {echo "This comment attracts even numbers of correct and wrong guesses."; }
-}
-
-function get_trends() {
-	
-$positive = $_SESSION['correct'];
-$negative = $_SESSION['wrong'];
-
-if ($positive == $negative) {
-	return 0; }
-
-$total_votes = $positive + $negative;
-$score = $positive - $negative;
-
-if ($total_votes == 1 && $score == -1) {
-	return -1; }
-elseif ($total_votes == 1 && $score == 1) {
-	return 1; }
-
-return $score;
-
 }
 
 function get_response($tone) {
