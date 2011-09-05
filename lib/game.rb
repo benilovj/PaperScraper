@@ -26,6 +26,15 @@ class QuizQuestion
   def score
     answer_correct? ? 1 : 0
   end
+
+  def answer=(answer)
+    @answer = answer
+    if answer_correct?
+      GameResult.correctly_guessed(@comment)
+    else
+      GameResult.wrongly_guessed(@comment)
+    end
+  end
   
 	def answer=(answer)
     @answer = answer

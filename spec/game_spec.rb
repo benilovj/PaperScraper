@@ -217,6 +217,6 @@ describe Game do
     end
 
     specify { @game.should be_finished }
-    specify { @game.score.should == 0}}
+    specify { @game.score.should == 0}
   end
 end
