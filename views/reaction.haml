@@ -4,7 +4,7 @@
   %img{:alt => "It was from the #{@game.reaction.correct_paper_name}", :src => @game.reaction.correct_paper_logo}/
   %br/
 .centretext
-  %p.systemfont People tend to guess the correct source for this comment.
+  %p.systemfont= @game.reaction.comment_on_stats
 #wflf-question-controls
   %br/
   %p.centretext

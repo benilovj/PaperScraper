@@ -92,11 +92,14 @@ describe QuizQuestion do
 end
 
 shared_examples "a reaction" do
-  let(:reaction) do
+  before do
     paper = mock(Paper, :name => "correct paper", :logo => "http://paper.com/logo.jpg")
     article = mock(Article, :url => "http://xxx")
-    comment = mock(Comment, :paper => paper, :article => article)
-    described_class.new(comment)
+    @comment = mock(Comment, :paper => paper, :article => article)
+  end
+  
+  let(:reaction) do
+    described_class.new(@comment)
   end
   
   specify { reaction.correct_paper_name.should eq("correct paper") }
@@ -104,6 +107,26 @@ shared_examples "a reaction" do
   
   it "should provide a url to the source article" do
     reaction.source_article_url.should eq("http://xxx")
+  end
+  
+  it "should have no message for a comment with inconclusive stats" do
+    GameResult.should_receive(:stats_for).with(@comment).and_return(:inconclusive)
+    reaction.comment_on_stats.should be_empty
+  end
+  
+  it "should have a message for a comment with mostly correct guesses" do
+    GameResult.should_receive(:stats_for).with(@comment).and_return(:mostly_correct)
+    reaction.comment_on_stats.should match(/correct/)
+  end
+  
+  it "should have a message for a comment with mostly wrong guesses" do
+    GameResult.should_receive(:stats_for).with(@comment).and_return(:mostly_wrong)
+    reaction.comment_on_stats.should match(/wrong/)
+  end
+  
+  it "should have a message for a comment with mostly wrong guesses" do
+    GameResult.should_receive(:stats_for).with(@comment).and_return(:equal_number_of_correct_wrong)
+    reaction.comment_on_stats.should match(/even numbers/)
   end
 end
 

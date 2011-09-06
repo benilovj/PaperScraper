@@ -72,6 +72,16 @@ class Reaction
   def source_article_url
     @comment.article.url
   end
+  
+  def comment_on_stats
+    case GameResult.stats_for(@comment)
+    when :inconclusive then ""
+    when :mostly_correct then "People tend to guess this comment correctly."
+    when :mostly_wrong then "People tend to guess the wrong source for this comment."
+    when :equal_number_of_correct_wrong then "This comment attracts even numbers of correct and wrong guesses."
+    else nil
+    end
+  end
 end
 
 class PositiveReaction < Reaction

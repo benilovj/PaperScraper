@@ -77,6 +77,14 @@ class GameResult < ActiveRecord::Base
   set_primary_key :comment_id
   belongs_to :comment
   
+  def total_count
+    wrong_guess_count + correct_guess_count
+  end
+  
+  def count_difference
+    correct_guess_count - wrong_guess_count
+  end
+  
   class << self
     def correctly_guessed(comment)
       record = record_for(comment)
@@ -88,6 +96,17 @@ class GameResult < ActiveRecord::Base
       record = record_for(comment)
       record.wrong_guess_count += 1
       record.save
+    end
+    
+    def stats_for(comment)
+      record = record_for(comment)
+      return :inconclusive if record.nil? or record.total_count < 5
+      
+      case
+      when record.count_difference >=2 then :mostly_correct
+      when record.count_difference <=-2 then :mostly_wrong
+      else :equal_number_of_correct_wrong
+      end
     end
     
     protected
