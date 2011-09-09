@@ -1,0 +1,9 @@
+#main
+  #wflf-content-box
+    #wflf-top-ten-table
+      %img{:src => @paper.logo}
+      #subheading
+        %span.wflf-broad-text Top 10: The ones most people get right
+      %ol
+        - for comment_text in @comment_texts
+          %li= comment_text

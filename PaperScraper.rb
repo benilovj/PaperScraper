@@ -109,6 +109,16 @@ class GameResult < ActiveRecord::Base
       end
     end
     
+    def top_ten_comments_guessed_from(paper)
+      GameResult.
+        joins(:comment => :article).
+        where("correct_guess_count > wrong_guess_count").
+        where("paper = ?", paper.name).
+        order("correct_guess_count DESC").
+        limit(10).
+        map(&:comment)
+    end
+    
     protected
     def record_for(comment)
       find_by_comment_id(comment.id) || create(:comment => comment, :wrong_guess_count => 0, :correct_guess_count => 0)

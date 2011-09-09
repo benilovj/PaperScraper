@@ -63,3 +63,10 @@ end
 after /game/ do
   session[:game] = @game.dump.to_yaml
 end
+
+get '/rankings/:paper_name' do |paper_name|
+  @paper = PAPERS[URI.unescape(paper_name)]
+  pass if @paper.nil?
+  @comment_texts = GameResult.top_ten_comments_guessed_from(@paper).map(&:comment)
+  haml :top_ten
+end
