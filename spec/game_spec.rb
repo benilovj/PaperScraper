@@ -216,19 +216,21 @@ describe Game do
     end
   end
 
-  context "after 10 questions and 9 answers" do
+  context "after 10 questions and 9 correct answers" do
     before do
       @game = game_with_mail_and_guardian
-      9.times { @game.answer = guardian }
+      9.times { @game.answer = mail }
       @game.current_question.comment_text
     end
+    
+    specify { @game.score.should == 9 }
     
     specify { @game.should_not be_finished }
     it "should reconstitute a dumped game" do
       search_condition = 'id in (%s)' % ([123]*10).join(", ")
       Comment.should_receive(:find).with(:all, :conditions => search_condition).and_return([mock(Comment, :id => 123,
-                                                                                                          :name => "Guardian",
-                                                                                                          :paper => PAPERS[:guardian])])
+                                                                                                          :name => "Daily Mail",
+                                                                                                          :paper => mail)])
       Game.load(@game.dump).dump.should == @game.dump
     end
   end
